@@ -5,6 +5,7 @@ module controllers {
         private connectionHubService: Interfaces.IConnectToGame;
         private $scope: Interfaces.IConnectToGameScope;
         private userId: string;
+        private groupInfo: Models.Group;
 
         static $inject = ["Services.ConnectToGameService", "$scope"];
         constructor(connectionHubService: Interfaces.IConnectToGame, $scope: Interfaces.IConnectToGameScope) {
@@ -17,7 +18,10 @@ module controllers {
             this.$scope.isConnectingToHub = true;
             this.$scope.isConnectedToHubSuccessfully = null;
 
-            var res = null;
+            this.connectionHubService.onUserLeft(data => this.onUserLeft.call(this, data));
+            this.connectionHubService.onGroupFulled(data => this.onGroupFulled.call(this, data));
+            this.$scope.connectToGroup = () => this.connectToGroup.apply(this);
+
             this.connectionHubService.connectToHub().done(value => {
                     this.$scope.$apply(() => {
                         this.userId = value;
@@ -32,14 +36,23 @@ module controllers {
                        this.$scope.isConnectedToHubSuccessfully = false; 
                     });
                 })
-
-                this.connectionHubService.onUserLeft(this.onUserLeft);
-                this.$scope.connectToGroup = () => this.connectToGroup.apply(this);
         }
 
-        private onUserLeft(): void {
+        private onGroupFulled(groupInfo: Models.Group): void {
             this.$scope.$apply(() => {
                       this.$scope.isConnectedToGroup = false;
+                      this.userId = null;
+                      this.groupInfo = null;
+                      this.$scope.isWaitingForNewUserToConnect = false;
+                    });
+        }
+
+        private onUserLeft(groupInfo: Models.Group): void {
+            this.$scope.$apply(() => {
+                      this.$scope.isConnectedToGroup = false;
+                      this.userId = null;
+                      this.groupInfo = null;
+                      this.$scope.isWaitingForNewUserToConnect = true;
                     });
         }
 
@@ -47,11 +60,12 @@ module controllers {
             this.$scope.isConnectingToGroup = true;
             this.$scope.isConnectedToGroup = null;
 
-            this.connectionHubService.connectToNewGroup().done(g => {
+            this.connectionHubService.connectToNewGroup().done(userId => {
                 this.$scope.$apply(() => {
                       this.$scope.isConnectedToGroup = true;
+                      this.userId = userId;
                     });
-            }).fail(() => {
+            }).fail(error => {
                 this.$scope.$apply(() => {
                       this.$scope.isConnectedToGroup = false;
                     });

@@ -1,8 +1,10 @@
 ﻿using System;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.SignalR.Hubs;
 using Microsoft.AspNetCore.SignalR.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +15,8 @@ using SimpleInjector.Integration.AspNetCore.Mvc;
 using WordsComp.Concrete;
 using WordsComp.Concrete.WordsComp.Concrete;
 using WordsComp.Interfaces;
+using WordsComp.Models;
+using WordsComp.RestModels;
 using IApplicationBuilder = Microsoft.AspNetCore.Builder.IApplicationBuilder;
 
 // TODO: Fix when it will be available with signalR full support
@@ -21,6 +25,21 @@ namespace WordsComp
 {
     public class Startup
     {
+        private class SimpleInjectorHubActivator : IHubActivator
+        {
+            private readonly Container container;
+
+            public SimpleInjectorHubActivator(Container container)
+            {
+                this.container = container;
+            }
+
+            public IHub Create(HubDescriptor descriptor)
+            {
+                return (IHub)container.GetInstance(descriptor.HubType);
+            }
+        }
+
         private readonly Container container = new Container();
         public Startup(IHostingEnvironment env)
         {
@@ -47,13 +66,19 @@ namespace WordsComp
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
 
-            services.AddSignalR();
+            services.AddSignalR(options =>
+            {
+                options.Hubs.EnableDetailedErrors = true;
+                options.Hubs.EnableJavaScriptProxies = true;
+            });
             services.AddMvc();
 
             services.AddSingleton<IControllerActivator>(
-            new SimpleInjectorControllerActivator(container));
+                new SimpleInjectorControllerActivator(container));
             services.AddSingleton<IViewComponentActivator>(
                 new SimpleInjectorViewComponentActivator(container));
+            services.AddSingleton<IHubActivator>(
+                new SimpleInjectorHubActivator(container));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
@@ -78,6 +103,7 @@ namespace WordsComp
                .UseSimpleInjectorAspNetRequestScoping(container);
                
             StartInteractionWithUser();
+            Mapper.Initialize(config => config.CreateMap<UserInfo, UserModel>());
         }
 
         private void InitializeContainer(IApplicationBuilder app)

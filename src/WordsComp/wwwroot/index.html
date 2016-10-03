@@ -6,14 +6,14 @@
 </head>
 
 <body>
-
-<div ng-app="gameApp" ng-controller="controllers.ConnectToGameController">
-    <span>{{isConnectingToHub}}</span>
-    <span>{{isConnectingToGroup}}</span>
-    <span>{{isConnectedToGroup}}</span>
-    <button ng-click="connectToGroup()">Connect to group</button>
-</div>
+    <div ng-app="gameApp" ng-controller="controllers.ConnectToGameController">
+        <span>{{isConnectingToHub}}</span>
+        <span>{{isConnectingToGroup}}</span>
+        <span>{{isConnectedToGroup}}</span>
+        <button ng-click="connectToGroup()">Connect to group</button>
+    </div>
     <script src="/global.js"></script>
     <script src="/custom.js"></script>
+    <script src="signalr/hubs"></script>
 </body>
 </html>

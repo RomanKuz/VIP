@@ -7,6 +7,9 @@ module Interfaces {
         isConnectingToGroup: boolean;
         isConnectedToGroup: boolean;
 
+        // true === waiting, false === new user connected, null === unknown
+        isWaitingForNewUserToConnect: boolean;
+
         connectToGroup: () => void;
     }
 }

@@ -5,6 +5,7 @@ var concat = require('gulp-concat');
 var ts = require('gulp-typescript');
 var runSequence = require('run-sequence');
 var watch = require('gulp-watch');
+var plumber = require('gulp-plumber');
 
 const customTsSrc = path.join(__dirname, './wwwroot/tscripts');
 const dest = path.join(__dirname, './wwwroot');
@@ -33,9 +34,6 @@ gulp.task('customTs', function() {
         }))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(`${dest}`));
-
-  // copy all files to make source map working
-  gulp.src([`${customTsSrc}/**/*`]).pipe(gulp.dest(`${dest}/tscripts`));
 });
 
 gulp.task('globalTs', function() {

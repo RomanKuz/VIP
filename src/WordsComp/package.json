@@ -16,12 +16,14 @@
     "gulp-sourcemaps": "^1.6.0",
     "gulp-typescript": "^3.0.1",
     "jquery": "^3.1.1",
+    "npm": "^3.10.8",
     "path": "^0.12.7",
     "run-sequence": "^1.2.2",
     "signalr": "^2.2.1",
     "typescript": "^2.0.3"
   },
   "devDependencies": {
+    "gulp-plumber": "^1.1.0",
     "gulp-watch": "^4.3.10"
   }
 }

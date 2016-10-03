@@ -15,7 +15,7 @@ module Common {
             this.appName = "gameApp"
             this.hubConnectToGroupMethodName = "connect";
             this.connectedToGroup = "userAdded";
-            this.leftGroup = "leftGroup";
+            this.leftGroup = "userLeft";
             this.groupFulled = "groupFulled";
             this.competitionHub = "competitionHub";
         }

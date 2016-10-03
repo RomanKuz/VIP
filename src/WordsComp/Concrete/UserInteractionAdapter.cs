@@ -23,17 +23,29 @@ namespace WordsComp.Concrete
             var hubContext = GetHubContext();
             userGroupsCollector.GroupFulledObservable.Subscribe(g =>
             {
-                hubContext.Clients.Group(g.GetGroupId()).groupFulled(g.ToRestModel());
+                var group = hubContext.Clients.Group(g.GetGroupId());
+                if (group != null)
+                {
+                    group.groupFulled(g.ToRestModel());
+                }
             });
 
             userGroupsCollector.UserAddedToGroup.Subscribe(g =>
             {
-                hubContext.Clients.Group(g.GetGroupId()).userAdded(g.ToRestModel());
+                var group = hubContext.Clients.Group(g.GetGroupId());
+                if (group != null)
+                {
+                    group.userAdded(g.ToRestModel());
+                }
             });
 
             userGroupsCollector.UserLeftGroupObservable.Subscribe(g =>
             {
-                hubContext.Clients.Group(g.GetGroupId()).userLeft(g.ToRestModel());
+                var group = hubContext.Clients.Group(g.GetGroupId());
+                if (group != null)
+                {
+                    group.userLeft(g.ToRestModel());
+                }
             });
         }
 

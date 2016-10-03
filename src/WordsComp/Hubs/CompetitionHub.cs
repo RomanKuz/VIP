@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.Hubs;
 using WordsComp.Interfaces;
 using WordsComp.Models;
 
@@ -36,10 +37,7 @@ namespace WordsComp.Hubs
         {
             try
             {
-                collector.RemoveUser(new UserInfo
-                {
-                    UserId = Context.ConnectionId
-                });
+                Quit();
             }
             catch (Exception ex)
             {

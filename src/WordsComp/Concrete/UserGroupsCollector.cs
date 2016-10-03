@@ -36,15 +36,25 @@ namespace WordsComp.Concrete
 
             public async Task AddUserToQueue(UserInfo newUser)
             {
+                bool isConnectedToExistingGroup = false;
                 UserGroup existingGroup;
-                // TODO: Group can be empty
                 if (internalWaitingUserQueue.TryDequeue(out existingGroup))
                 {
-                    await existingGroup.ConnectUser(newUser);
-                    internalFulledUserGroups.Add(existingGroup);
-                    groupFulledSubject.OnNext(existingGroup);
+                    while (existingGroup != null && existingGroup.IsEmpty())
+                    {
+                        internalWaitingUserQueue.TryDequeue(out existingGroup);
+                    }
+
+                    if (existingGroup != null)
+                    {
+                        await existingGroup.ConnectUser(newUser);
+                        internalFulledUserGroups.Add(existingGroup);
+                        groupFulledSubject.OnNext(existingGroup);
+                        isConnectedToExistingGroup = true;
+                    }
                 }
-                else
+                 
+                if (!isConnectedToExistingGroup)
                 {
                     var newGroup = serviceProvider.GetService<UserGroup>();
                     await newGroup.EstablishConnection(newUser);
