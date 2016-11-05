@@ -1,5 +1,11 @@
 ﻿using System;
+using System.Linq;
 using AutoMapper;
+using BLogic;
+using BLogic.Concrete;
+using BLogic.Concrete.WordsComp.Concrete;
+using BLogic.Interfaces;
+using BLogic.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -13,13 +19,9 @@ using SimpleInjector;
 using SimpleInjector.Integration.AspNetCore;
 using SimpleInjector.Integration.AspNetCore.Mvc;
 using WordsComp.Concrete;
-using WordsComp.Concrete.WordsComp.Concrete;
 using WordsComp.Interfaces;
-using WordsComp.Models;
 using WordsComp.RestModels;
 using IApplicationBuilder = Microsoft.AspNetCore.Builder.IApplicationBuilder;
-
-// TODO: Fix when it will be available with signalR full support
 
 namespace WordsComp
 {
@@ -101,9 +103,9 @@ namespace WordsComp
                .UseMvc()
                .UseStaticFiles()
                .UseSimpleInjectorAspNetRequestScoping(container);
-               
+
+            InitializeMapper();
             StartInteractionWithUser();
-            Mapper.Initialize(config => config.CreateMap<UserInfo, UserModel>());
         }
 
         private void InitializeContainer(IApplicationBuilder app)
@@ -122,12 +124,38 @@ namespace WordsComp
             container.RegisterSingleton<IUserGroupsProvider, UserGroupsProvider>();
             container.RegisterSingleton<IUserInteractionAdapter, UserInteractionAdapter>();
             container.RegisterSingleton(app.ApplicationServices.GetService<IConnectionManager>);
+            container.Register<IWordStorageAdapter, WordStorageAdapter>();
+            container.Register<IGameProvider, GameProvider>();
+
+            DependencyResolverHelper.RegisterDependencies(container);
         }
 
         private void StartInteractionWithUser()
         {
             var userInteractionAdapter = container.GetService<IUserInteractionAdapter>();
             userInteractionAdapter.EstablishInteractionWithClients();
+        }
+
+        private void InitializeMapper()
+        {
+            Mapper.Initialize(config =>
+            {
+                config.CreateMap<UserInfo, UserModel>();
+                config.CreateMap<UserGroup, GroupModel>()
+                    .ForMember(d => d.GroupId, opts => opts.MapFrom(s => s.GetGroupId()))
+                    .ForMember(d => d.UsersList,
+                               opts => opts.MapFrom(s => s.GetUsers().Select(Mapper.Map<UserModel>).ToList()));
+                config.CreateMap<Score, ScoreModel>();
+                config.CreateMap<TranslateVariant, TranslateVariantModel>();
+                config.CreateMap<WordBL, WordModel>()
+                      .ForMember(d => d.ShortWordRepresentation,
+                                 opts => opts.MapFrom(s => s.GetShortWordRepresentation()));
+                config.CreateMap<MoveResult, MoveResultModel>();
+                config.CreateMap<Game, GameModel>();
+                config.CreateMap<GameResult, GameResultModel>();
+
+                MapperInitializerHelper.InitializeMapping(config);
+            });
         }
     }
 }

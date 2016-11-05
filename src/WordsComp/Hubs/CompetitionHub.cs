@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AutoMapper;
+using BLogic.Interfaces;
+using BLogic.Models;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.SignalR.Hubs;
-using WordsComp.Interfaces;
-using WordsComp.Models;
+using WordsComp.RestModels;
 
 namespace WordsComp.Hubs
 {
@@ -16,21 +17,44 @@ namespace WordsComp.Hubs
             this.collector = collector;
         }
 
-        public async Task<string> Connect()
+        public async Task Connect(string displayName, WordLevel level)
         {
-            await collector.AddUserToQueue(new UserInfo
+            if (string.IsNullOrWhiteSpace(displayName)) throw new ArgumentNullException(nameof(displayName));
+            if (level == WordLevel.Unknown) throw new ArgumentException(nameof(level));
+            await collector.AddUserToQueue(new UserInfo(Context.ConnectionId, displayName, level));
+        }
+
+        public MoveResultModel DoMove(Move move, string word, string variant)
+        {
+            var group = collector.GetUserGroup(Context.ConnectionId);
+            if (group != null)
             {
-                UserId = Context.ConnectionId
-            });
-            return Context.ConnectionId;
+                var res = group.GameProvider.DoMove(move, word, variant);
+                return Mapper.Map<MoveResultModel>(res);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public MoveResultModel PassMove(Move move)
+        {
+            var group = collector.GetUserGroup(Context.ConnectionId);
+            if (group != null)
+            {
+                var res = group.GameProvider.PassMove(move);
+                return Mapper.Map<MoveResultModel>(res);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public void Quit()
         {
-            collector.RemoveUser(new UserInfo
-            {
-                UserId = Context.ConnectionId
-            });
+            collector.RemoveUser(Context.ConnectionId);
         }
 
         public override Task OnDisconnected(bool stopCalled)

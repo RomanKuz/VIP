@@ -1,0 +1,147 @@
+@import (reference) "../../node_modules/bootstrap-less/bootstrap/bootstrap.less";
+
+@user-info-margin: 10px;
+
+html,body{
+    height: 100%
+}
+
+.game-container {
+    height: 100%; /* cross-browser */
+    position: relative;
+}
+
+.user2-info {
+    &:extend(.container);
+    position: absolute;
+    top: @user-info-margin;
+    text-align: center;
+}
+
+.current-user-info {
+    &:extend(.container);
+    position: absolute;
+    bottom: @user-info-margin;
+    text-align: center;
+}
+
+.word-container {
+    &:extend(.container);
+    position: absolute;
+    top:50%;
+    text-align: center;
+    transform: translate(0px, -50%);
+    z-index: 100;
+}
+
+.translateVariant {
+    margin: 10px;
+}
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+
+.modal {
+  text-align: center;
+  padding: 0!important;
+}
+
+.modal:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  margin-right: -4px;
+}
+
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  top: -100px;
+  vertical-align: middle;
+}
+
+#word {
+    display: inline-block;
+    margin: 5px;
+}
+
+@horizontal-margin: 10px;
+@vertical-margin: 20px;
+
+.passedWords {
+    &:extend(.container);
+    position: fixed;
+    left: @horizontal-margin;
+    top: @vertical-margin;
+    z-index: -1;
+}
+
+.wordsLeft {
+    &:extend(.container);
+    position: fixed;
+    right: @horizontal-margin;
+    top: @vertical-margin;
+    z-index: -1;
+}
+
+@words-left-animation-time: 0.3s;
+.row.ng-leave {
+    animation: dummy-animation @words-left-animation-time linear;
+}
+
+.row.ng-leave>.words-left-item {
+    animation: word-item-left-amimation @words-left-animation-time linear;
+}
+
+.passed-words-container.ng-enter {
+    animation: dummy-animation @words-left-animation-time linear;
+}
+
+.passed-words-container.ng-enter>.passed-word.success-move {
+    animation: passed-word-enter-animation @words-left-animation-time linear;
+}
+
+.passed-word.success-move {
+    background: #5cb85c; 
+    opacity: 1; 
+    color: #f9f9f9;
+}
+
+.passed-words-container.ng-enter>.passed-word.wrong-move {
+    animation: wrong-move-enter-animation @words-left-animation-time linear;
+}
+
+.passed-word.wrong-move {
+    background: #d9534f; 
+    opacity: 1; 
+    color: #f9f9f9;
+}
+
+@keyframes dummy-animation {
+    from {opacity: 1}
+    to {opacity: 1}
+}
+
+@keyframes word-item-left-amimation {
+    0% { background: none; opacity: 1; }
+
+    50% { background: #5bc0de; opacity: 1; color: white; }
+
+    100% { background: gray; opacity: 0; color: black; }
+}
+
+@keyframes passed-word-enter-animation {
+    from { background: none; opacity: 0; }
+
+    to { background: #5cb85c; opacity: 1; color: #f9f9f9; }
+}
+
+@keyframes wrong-move-enter-animation {
+    from { background: none; opacity: 0; }
+
+    to { background: #d9534f; opacity: 1; color: #f9f9f9; }
+}
+
+

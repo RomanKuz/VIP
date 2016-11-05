@@ -1,4 +1,6 @@
-﻿namespace WordsComp.Interfaces
+﻿using BLogic.Interfaces;
+
+namespace WordsComp.Interfaces
 {
     public interface IUserInteractionAdapter
     {

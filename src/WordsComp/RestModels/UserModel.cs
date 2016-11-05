@@ -7,5 +7,8 @@ namespace WordsComp.RestModels
     {
         [JsonProperty("userId")]
         public string UserId { get; set; }
+
+        [JsonProperty("displayName")]
+        public string DisplayName { get; set; }
     }
 }

@@ -1,5 +1,9 @@
 /// <reference path="common.ts" />
-((): void=> {
+module App {
     var constants = Common.GetConstants();
-    var app = angular.module(constants.appName, []);
-})();
+    var app = angular.module(constants.appName, ['ui.bootstrap.modal','cgBusy', 'ngAnimate']);
+
+    export function GetApp(): ng.IModule {
+        return app;
+    }
+}

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using BLogic.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Infrastructure;
 using WordsComp.Hubs;
-using WordsComp.Interfaces;
 
 namespace WordsComp.Concrete
 {
