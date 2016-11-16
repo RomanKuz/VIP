@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using AutoMapper;
 using BLogic;
@@ -8,16 +10,14 @@ using BLogic.Interfaces;
 using BLogic.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.SignalR.Hubs;
 using Microsoft.AspNetCore.SignalR.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using SimpleInjector;
 using SimpleInjector.Integration.AspNetCore;
-using SimpleInjector.Integration.AspNetCore.Mvc;
 using WordsComp.Concrete;
 using WordsComp.Interfaces;
 using WordsComp.RestModels;
@@ -73,12 +73,7 @@ namespace WordsComp
                 options.Hubs.EnableDetailedErrors = true;
                 options.Hubs.EnableJavaScriptProxies = true;
             });
-            services.AddMvc();
 
-            services.AddSingleton<IControllerActivator>(
-                new SimpleInjectorControllerActivator(container));
-            services.AddSingleton<IViewComponentActivator>(
-                new SimpleInjectorViewComponentActivator(container));
             services.AddSingleton<IHubActivator>(
                 new SimpleInjectorHubActivator(container));
         }
@@ -98,11 +93,28 @@ namespace WordsComp
             app.UseApplicationInsightsRequestTelemetry();
             app.UseApplicationInsightsExceptionTelemetry();
 
+            var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(),
+                env.EnvironmentName == "Development" ? @"wwwroot\dev" : @"wwwroot\dist"));
+
             app.UseWebSockets()
                .UseSignalR()
-               .UseMvc()
+               .UseDefaultFiles(new DefaultFilesOptions()
+               {
+                   FileProvider = fileProvider
+               })
                .UseStaticFiles()
                .UseSimpleInjectorAspNetRequestScoping(container);
+
+            app.MapWhen(context =>
+            {
+                var path = context.Request.Path.Value;
+                return path.EndsWith(".html") 
+                    || path.EndsWith(".js")
+                    || path.EndsWith(".css");
+            }, config => config.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = fileProvider
+            }));
 
             InitializeMapper();
             StartInteractionWithUser();
@@ -110,10 +122,6 @@ namespace WordsComp
 
         private void InitializeContainer(IApplicationBuilder app)
         {
-            // Add application presentation components:
-            container.RegisterMvcControllers(app);
-            container.RegisterMvcViewComponents(app);
-
             // Cross-wire ASP.NET services (if any). For instance:
             container.RegisterSingleton(app.ApplicationServices.GetService<ILoggerFactory>());
             // NOTE: Prevent cross-wired instances as much as possible.

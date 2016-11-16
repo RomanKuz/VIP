@@ -81,7 +81,8 @@ namespace BLogic.Models
                     IsCorrect = false,
                     ErrorMessage = "It is another user turn",
                     NextMoveUserId = userId,
-                    IsLastMove = false
+                    IsLastMove = false,
+                    SelectedVariantIndex = -1
                 };
             }
             ChangeMoveTurn();
@@ -95,7 +96,8 @@ namespace BLogic.Models
                     IsCorrect = false,
                     ErrorMessage = "No words any more. Smth bad happened. Game should be finished",
                     NextMoveUserId = userId,
-                    IsLastMove = false
+                    IsLastMove = false,
+                    SelectedVariantIndex = -1
                 };
             }
 
@@ -110,15 +112,18 @@ namespace BLogic.Models
                     IsSuccessful = false,
                     IsCorrect = false,
                     ErrorMessage = $"No such variant for word {word}",
-                    NextMoveUserId = userId
+                    NextMoveUserId = userId,
+                    SelectedVariantIndex = -1
                 };
             }
 
+            int varIndex = wordInfo.TranslateVariants.IndexOf(variantInfo);
             var res = new MoveResult
             {
                 IsCorrect = true,
                 ErrorMessage = string.Empty,
-                NextMoveUserId = userId
+                NextMoveUserId = userId,
+                SelectedVariantIndex = varIndex
             };
 
             if (variantInfo.IsCorrect)
@@ -157,7 +162,8 @@ namespace BLogic.Models
                     IsCorrect = false,
                     ErrorMessage = "It is another user turn",
                     NextMoveUserId = userId,
-                    IsLastMove = false
+                    IsLastMove = false,
+                    SelectedVariantIndex = -1
                 };
             }
 
@@ -167,7 +173,8 @@ namespace BLogic.Models
                 IsCorrect = true,
                 ErrorMessage = string.Empty,
                 NextMoveUserId = userId,
-                IsSuccessful = false
+                IsSuccessful = false,
+                SelectedVariantIndex = -1
             };
 
             GameResult gameRes;

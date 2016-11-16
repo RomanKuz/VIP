@@ -12,6 +12,8 @@
 
         public bool IsLastMove { get; set; }
 
+        public int SelectedVariantIndex { get; set; }
+
         public GameResult GameResult { get; set; }
     }
 }

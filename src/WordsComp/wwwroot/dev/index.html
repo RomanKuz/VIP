@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Words competion</title>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="angular-busy.css">
+    <link rel="stylesheet" type="text/css" href="common.css">
+</head>
+
+<body ng-app="gameApp" class="ng-cloak">
+    <div class="game-container container-fluid" ng-show="$root.isStartGamePage" ng-controller="controllers.GameController">
+        <div class="row">
+            <!--passed words-->
+            <div class="col-md-2 passedWords hidden-xs hidden-sm">
+                <div class="row passed-words-container" ng-animate-children="true" ng-repeat="x in passedWords">
+                    <div class="col-xs-12">
+                        <div class="well well-sm passed-word" ng-class="{'success-move': x.wasPassed, 'wrong-move': !x.wasPassed}">
+                            <span>{{x.word}}</span>
+                            <span>-</span>
+                            <span>{{x.answer}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--user2-->
+            <div class="col-md-4 col-md-offset-2 col-xs-8 col-xs-offset-2 user2-info" cg-busy="{promise:$root.user2ConnectedPromise,message:'Ждём игрока'}">
+                <div class="well" ng-class="{'is-user-move-turn': isCurrentUserMove === false}">
+                    <span class="text-success">{{user2DisplayName}}</span>
+                    <span class="text-primary">Очки:&nbsp;{{user2Score.successfulMoves || 0}}</span>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-md-offset-3 col-xs-12 word-container container-fluid">
+                <!--variants for user2-->
+                <div class="row">
+                    <div class="col-xs-12" id="user2variants" ng-show="isCurrentUserMove === false">
+                        <button ng-if="isCurrentUserMove === false" data-toggle="tooltip" title="Не ваш ход" class="btn btn-default translateVariant nohover disabled" data-order="{{x.order}}" ng-class="{'variant-selected': x.isSelected, 'variant-correct': x.isTrue, 'variant-wrong': !x.isTrue}"
+                            ng-repeat="x in currentWord.translateVariants">
+                        {{x.order}}. {{x.variant}}
+                    </button>
+                    </div>
+                </div>
+
+                <div class="row" cg-busy="{promise:$root.loadingGamePromise,message:'Загрузка игры'}" id="word-element">
+                    <div ng-show="currentWord" ng-class="{'time-left': secondsForMoveLeft === 0}" class="col-xs-12 word-element-child panel panel-default">
+                        <span id="word" class="lead text-capitalize">{{currentWord.word}}</span>
+                        <br />
+                        <div class="progress" ng-show="percentagesLeft">
+                            <div class="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:{{percentagesLeft}}%">
+                                {{secondsForMoveLeft}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!--variants-->
+                <div class="row">
+                    <div class="col-xs-12" ng-show="isCurrentUserMove">
+                        <button ng-if="isCurrentUserMove" class="btn btn-default translateVariant" data-order="{{x.order}}" ng-class="{'variant-selected': x.isSelected, 'variant-correct': x.isTrue, 'variant-wrong': !x.isTrue}" ng-click="doMove(x.variant)" ng-repeat="x in currentWord.translateVariants">
+                        {{x.order}}. {{x.variant}}
+                    </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-2 col-xs-offset-2 hidden-xs hidden-sm">
+                <div class="wordsLeft row" ng-animate-children="true">
+                    <div class="col-xs-12 well well-sm words-left-item" ng-repeat="x in leftWords">
+                        <span class='word-left-item-caption'>{{x.word}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="current-user-info container-fluid col-md-4 col-md-offset-4 col-xs-8 col-xs-offset-2">
+                <div class="well" ng-class="{'is-user-move-turn': isCurrentUserMove}">
+                    <span class="text-success">{{displayName}}</span>
+                    <span class="text-primary">Очки:&nbsp;{{currentUserScore.successfulMoves || 0}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div ng-controller="controllers.ConnectToGameController" class="hidden">
+
+    </div>
+
+    <script type="text/ng-template" id="user2Left.html">
+        <div cg-busy='connectToGroupPromise'>
+            <div class="modal-header">
+                <h4>Вот неудача ;(</h4>
+            </div>
+            <div class="modal-body">
+                <i>{{leftUserName}}</i> покинул игру. Если хотите, можете сыграть ещё :D
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default btn-submit" ng-click="connectToGroup()">Start game</button>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="connectToGroup.html">
+        <div cg-busy='connectToGroupPromise'>
+            <div class="modal-header">
+                <h4>Введите своё имя</h4>
+            </div>
+            <div class="modal-body">
+                <div class="dropdown">
+                    <span class="text text-success">Уровень: </span>
+                    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        {{level.name}}
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                        <li ng-repeat="x in levels"><a href="#" ng-click="changeLevel(x)">{{x.name}}</a></li>
+                    </ul>
+                </div>
+                <br />
+                <input class="form-control" type="textarea" placeholder="Ваше имя :)" ng-model="$root.displayName"></input>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default btn-submit" ng-click="connectToGroup()">Начать игру</button>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="gameFinished.html">
+        <div cg-busy='connectToGroupPromise'>
+            <div class="modal-header">
+                <h4>Игра окончена :)</h4>
+            </div>
+            <div class="modal-body">
+                {{message}}
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default btn-submit" ng-click="playAgain()">Play again</button>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="windowTemplate.html">
+        <div modal-render="{{$isRendered}}" tabindex="-1" role="dialog" class="modal" uib-modal-animation-class="fade" modal-in-class="in" ng-style="{'z-index': 1050 + index*10, display: 'block'}">
+            <div class="modal-dialog" ng-class="size ? 'modal-' + size : ''">
+                <div class="modal-content" uib-modal-transclude></div>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="template/modal/backdrop.html">
+        <div uib-modal-animation-class="fade" modal-in-class="in" ng-style="{'z-index': 1040 + (index && 1 || 0) + index*10}"></div>
+    </script>
+
+    <script type="text/ng-template" id="angular-busy.html">
+        <div class="cg-busy-default-wrapper">
+
+            <div class="cg-busy-default-sign">
+
+                <div class="cg-busy-default-spinner">
+                    <div class="bar1"></div>
+                    <div class="bar2"></div>
+                    <div class="bar3"></div>
+                    <div class="bar4"></div>
+                    <div class="bar5"></div>
+                    <div class="bar6"></div>
+                    <div class="bar7"></div>
+                    <div class="bar8"></div>
+                    <div class="bar9"></div>
+                    <div class="bar10"></div>
+                    <div class="bar11"></div>
+                    <div class="bar12"></div>
+                </div>
+
+                <div class="cg-busy-default-text">{{$message}}</div>
+
+            </div>
+
+        </div>
+    </script>
+    <script src="/global.js "></script>
+    <script src="/custom.js "></script>
+    <script src="signalr/hubs "></script>
+</body>
+
+</html>

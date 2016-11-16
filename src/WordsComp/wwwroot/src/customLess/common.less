@@ -1,0 +1,200 @@
+@import (reference) "../../node_modules/bootstrap-less/bootstrap/bootstrap.less";
+
+@outer-margin: 10px;
+
+html,body{
+    height: 100%
+}
+
+// getting rid of blue border when pressed on chrome
+button {outline: none !important;}
+
+.game-container {
+    height: 100%; /* cross-browser */
+    position: relative;
+    margin: @outer-margin;
+}
+
+.absolute-center-container {
+    left: 0px;
+    right: 0px;
+}
+
+.user2-info {
+    text-align: center;
+}
+
+.current-user-info {
+    position: absolute;
+    text-align: center;
+    bottom: 0px;
+}
+
+.word-container {
+    position: absolute;
+    top:50%;
+    text-align: center;
+    transform: translate(0px, -50%);
+    z-index: 100;
+}
+
+.translateVariant {
+    margin: 10px;
+}
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+
+.modal {
+  text-align: center;
+  padding: 0!important;
+}
+
+.modal:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  margin-right: -4px;
+}
+
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  top: -100px;
+  vertical-align: middle;
+}
+
+#word {
+    display: inline-block;
+    margin: 5px;
+}
+
+@horizontal-margin: 10px;
+
+.passedWords {
+    left: @horizontal-margin;
+    z-index: -1;
+}
+
+.wordsLeft {
+    right: @horizontal-margin;
+    z-index: -1;
+}
+
+@words-left-animation-time: 0.3s;
+.row.ng-leave {
+    animation: dummy-animation @words-left-animation-time linear;
+}
+
+.words-left-item.ng-leave {
+    animation: word-item-left-amimation @words-left-animation-time linear;
+}
+
+.passed-words-container.ng-enter {
+    animation: dummy-animation @words-left-animation-time linear;
+}
+
+.passed-words-container.ng-enter>.passed-word.success-move {
+    animation: passed-word-enter-animation @words-left-animation-time linear;
+}
+
+@success-color: #5cb85c;
+@wrong-color: #d9534f;
+@white-color: #f9f9f9;
+@blue-color: #5bc0de;
+
+.passed-word.success-move {
+    background: @success-color; 
+    opacity: 1; 
+    color: @white-color;
+}
+
+.passed-words-container.ng-enter>.passed-word.wrong-move {
+    animation: wrong-move-enter-animation @words-left-animation-time linear;
+}
+
+.passed-word.wrong-move {
+    background: @wrong-color; 
+    opacity: 1; 
+    color: @white-color;
+}
+
+@keyframes dummy-animation {
+    from {opacity: 1}
+    to {opacity: 1}
+}
+
+@keyframes word-item-left-amimation {
+    0% { background: none; opacity: 1; }
+
+    50% { background: @blue-color; opacity: 1; color: white; }
+
+    100% { background: gray; opacity: 0; color: black; }
+}
+
+@keyframes passed-word-enter-animation {
+    from { background: none; opacity: 0; }
+
+    to { background: @success-color; opacity: 1; color: @white-color; }
+}
+
+@keyframes wrong-move-enter-animation {
+    from { background: none; opacity: 0; }
+
+    to { background: @wrong-color; opacity: 1; color: @white-color; }
+}
+
+@next-word-animation-time: 0.150s;
+.variant-selected.variant-correct {
+    animation: variant-correct-enter-animation @next-word-animation-time linear;
+    background: @success-color;
+    color: @white-color;
+}
+
+.variant-selected.variant-wrong {
+    animation: variant-wrong-enter-animation @next-word-animation-time linear;
+    background: @wrong-color;
+    color: @white-color;
+}
+
+@keyframes variant-correct-enter-animation {
+    from { background: none; opacity: 1; }
+
+    to { background: @success-color; opacity: 1; color: @white-color; }
+}
+
+@keyframes variant-wrong-enter-animation {
+    from { background: none; opacity: 1; }
+
+    to { background: @wrong-color; opacity: 1; color: @white-color; }
+}
+
+.word-element-child.time-left {
+    animation: time-left-frames @next-word-animation-time linear;
+    box-shadow: 0px 0px 2px 4px @wrong-color;
+}
+
+@keyframes time-left-frames {
+    from { box-shadow: none; }
+    to { box-shadow: 0px 0px 2px 4px @wrong-color; }
+}
+
+.is-user-move-turn {
+    animation: is-user-move-turn-frames @next-word-animation-time linear;
+    box-shadow: 0px 0px 2px 5px #5bc0de;
+}
+
+@keyframes is-user-move-turn-frames {
+    from { box-shadow: none; }
+    to { box-shadow: 0px 0px 2px 5px #5bc0de; }
+}
+
+#word-element {
+    margin-top: 20px; // 20px bottom margin has panel in bootstrap
+}
+
+.btn.nohover {
+    opacity: 1.0 !important;
+}

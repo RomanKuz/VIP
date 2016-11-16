@@ -32,7 +32,6 @@ namespace BLogic.Concrete
             {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
-            
 
             var res = new List<WordBL>(count);
             var rnd = new Random();

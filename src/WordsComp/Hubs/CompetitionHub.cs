@@ -21,6 +21,7 @@ namespace WordsComp.Hubs
         {
             if (string.IsNullOrWhiteSpace(displayName)) throw new ArgumentNullException(nameof(displayName));
             if (level == WordLevel.Unknown) throw new ArgumentException(nameof(level));
+
             await collector.AddUserToQueue(new UserInfo(Context.ConnectionId, displayName, level));
         }
 

@@ -16,6 +16,10 @@ namespace WordsComp.RestModels
         [JsonProperty("isLastMove")]
         public bool IsLastMove { get; set; }
 
+
+        [JsonProperty("selectedVariantIndex")]
+        public int SelectedVariantIndex { get; set; }
+
         [JsonProperty("gameResult")]
         public GameResultModel GameResult { get; set; }
     }
