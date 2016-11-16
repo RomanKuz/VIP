@@ -4,11 +4,19 @@ namespace DAL
 {
     public class WordsDataContext: IWordsDataContext
     {
-        private static readonly IMongoDatabase db;
+        private static IMongoDatabase db;
+        private static MongoClient client;
 
-        static WordsDataContext()
+        public static void SetUpMongoClient(MongoClientSettings settings = null)
         {
-            var client = new MongoClient();
+            if (settings == null)
+            {
+                client = new MongoClient();
+            }
+            else
+            {
+                client = new MongoClient(settings);
+            }
             db = client.GetDatabase("WordsStorage");
         }
 

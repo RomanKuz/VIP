@@ -86,11 +86,11 @@ module Services {
                     $scope.playAgain = connectToGameScope.connectToGroup;
 
                     if (isDraw) {
-                        $scope.message = "It is draw. Good job :D!\nDo you want to play again?";
+                        $scope.message = "Ничья. Отличная игра :D!\nХотите сыграть ещё раз?";
                     } else if (isWin) {
-                        $scope.message = "Congratulation! You have won!\nDo you want to play again?";
+                        $scope.message = "Поздравления! Вы выиграли!\nХотите сыграть ещё раз?";
                     } else {
-                        $scope.message = "You have lost, but who cares :). It was fun.\nDo you want to play again?";
+                        $scope.message = "Даже если проиграл, преобретенный опыт останется навсегда с тобой и станет твоей наградой :)\nХотите сыграть ещё раз?";
                     }
                 }
                 opt.templateUrl = "gameFinished.html";

@@ -65,7 +65,7 @@ gulp.task('customTs', function() {
             out: 'custom.js'
         }));
     if (shouldBeMinified) {
-        pipeline = pipeline.pipe(uglify());
+        pipeline = pipeline.pipe(uglify({ mangle: false })); // mangle: false - quick fix for broken angular DI
     }
     pipeline.pipe(sourcemaps.write())
         .pipe(gulp.dest(dest));

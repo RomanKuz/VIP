@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Authentication;
 using AutoMapper;
 using BLogic;
 using BLogic.Concrete;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
 using SimpleInjector;
 using SimpleInjector.Integration.AspNetCore;
 using WordsComp.Concrete;
@@ -117,6 +119,7 @@ namespace WordsComp
             }));
 
             InitializeMapper();
+            SetUpDbConnection(env.EnvironmentName);
             StartInteractionWithUser();
         }
 
@@ -164,6 +167,32 @@ namespace WordsComp
 
                 MapperInitializerHelper.InitializeMapping(config);
             });
+        }
+
+        private void SetUpDbConnection(string env)
+        {
+            if (env == "Development")
+            {
+                MongoDbInitializerHelper.SetUpMongoClient();
+            }
+            else
+            {
+                MongoDbInitializerHelper.SetUpMongoClient(new MongoClientSettings
+                {
+                    Server = new MongoServerAddress("document-db-first.documents.azure.com", 10250),
+                    UseSsl = true,
+                    SslSettings = new SslSettings
+                    {
+                        EnabledSslProtocols = SslProtocols.Tls12
+                    },
+                    Credentials = new List<MongoCredential>
+                    {
+                        new MongoCredential("SCRAM-SHA-1",
+                                            new MongoInternalIdentity("WordsStorage", "document-db-first"),
+                                            new PasswordEvidence("vFCq4qvYM0hzofkHqGZzpNlZh21dUQdnUL3ZdGJU9wWhcCzIR26pmGW5CDDXqALKQNE4Gn4UEPTsWRWsqIsQtw=="))
+                    }
+                });
+            }
         }
     }
 }
