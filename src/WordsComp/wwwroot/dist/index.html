@@ -35,6 +35,16 @@
             </div>
 
             <div class="col-md-6 col-md-offset-3 col-xs-12 word-container container-fluid">
+                <!--variants for user2-->
+                <div class="row">
+                    <div class="col-xs-12" id="user2variants" ng-show="isCurrentUserMove === false">
+                        <button ng-if="isCurrentUserMove === false" data-toggle="tooltip" title="Не ваш ход" class="btn btn-default translateVariant nohover disabled" data-order="{{x.order}}" ng-class="{'variant-selected': x.isSelected, 'variant-correct': x.isTrue, 'variant-wrong': !x.isTrue}"
+                            ng-repeat="x in currentWord.translateVariants">
+                        {{x.order}}. {{x.variant}}
+                    </button>
+                    </div>
+                </div>
+
                 <div class="row" cg-busy="{promise:$root.loadingGamePromise,message:'Загрузка игры'}" id="word-element">
                     <div ng-show="currentWord" ng-class="{'time-left': secondsForMoveLeft === 0}" class="col-xs-12 word-element-child panel panel-default">
                         <span id="word" class="lead text-capitalize">{{currentWord.word}}</span>
@@ -168,7 +178,6 @@
 
         </div>
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/4.0.5/es6-promise.min.js"></script>
     <script src="/global.js "></script>
     <script src="/custom.js "></script>
     <script src="signalr/hubs "></script>

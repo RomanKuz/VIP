@@ -6,7 +6,6 @@ using AutoMapper;
 using BLogic.Interfaces;
 using BLogic.Models;
 using DAL;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace BLogic.Concrete
