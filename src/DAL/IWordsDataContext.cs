@@ -4,6 +4,6 @@ namespace DAL
 {
     public interface IWordsDataContext
     {
-        IMongoCollection<WordDTO> GetWordsCollection();
+        IMongoCollection<WordDTO> GetWordsCollection(int collectionType);
     }
 }

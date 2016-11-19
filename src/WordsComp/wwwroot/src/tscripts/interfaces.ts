@@ -6,3 +6,4 @@
 /// <reference path="./interfaces/iStateHandler.ts" />
 /// <reference path="./interfaces/iGameFinishedModalWindowScope.ts" />
 /// <reference path="./models/models.ts" />
+/// <reference path="./interfaces/iCookieService.ts" />

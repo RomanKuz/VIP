@@ -6,6 +6,7 @@ using AutoMapper;
 using BLogic.Interfaces;
 using BLogic.Models;
 using DAL;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace BLogic.Concrete
@@ -26,23 +27,21 @@ namespace BLogic.Concrete
                 throw new ArgumentException(nameof(wordLevel));
             }
 
-            long maxNumber = await dataContext.GetWordsCollection().CountAsync(w => w.WordLevel == (int)wordLevel);
+            long maxNumber = await dataContext.GetWordsCollection((int)wordLevel)
+                                              .CountAsync(new BsonDocument());
             if (maxNumber < count || count < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            var res = new List<WordBL>(count);
             var rnd = new Random();
-            foreach (var randomWord in Enumerable.Range(0, (int)maxNumber).OrderBy(_ => rnd.Next()).Take(count))
-            {
-                var dbModel = await dataContext.GetWordsCollection()
-                                               .Find(w => w.WordLevel == (int)wordLevel)
-                                               .Skip(randomWord)
-                                               .FirstAsync();
-                res.Add(Mapper.Map<WordBL>(dbModel));
-            }
-            return res;
+            var wordsNumbers = Enumerable.Range(0, (int)count).Select(_ => rnd.Next(0, (int)maxNumber))
+                                         .ToList();
+            var dtoList = await dataContext.GetWordsCollection((int)wordLevel)
+                .Find(Builders<WordDTO>.Filter.In(w => w.WordIndex, wordsNumbers))
+                .ToListAsync();
+
+            return dtoList.Select(Mapper.Map<WordBL>).ToList();
         }
     }
 }

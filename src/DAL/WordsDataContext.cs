@@ -1,4 +1,6 @@
-﻿using MongoDB.Driver;
+﻿using System;
+using System.Reflection;
+using MongoDB.Driver;
 
 namespace DAL
 {
@@ -20,9 +22,37 @@ namespace DAL
             db = client.GetDatabase("WordsStorage");
         }
 
-        public IMongoCollection<WordDTO> GetWordsCollection()
+        private IMongoCollection<WordDTO> GetWordsAdvancedCollection()
         {
-            return db.GetCollection<WordDTO>("words");
+            return db.GetCollection<WordDTO>("words.adv");
+        }
+
+        private IMongoCollection<WordDTO> GetWordsIntermediateCollection()
+        {
+            return db.GetCollection<WordDTO>("words.intermediate");
+        }
+
+        private IMongoCollection<WordDTO> GetWordsBeginnerCollection()
+        {
+            return db.GetCollection<WordDTO>("words.beginner");
+        }
+
+        public IMongoCollection<WordDTO> GetWordsCollection(int collectionType)
+        {
+            switch (collectionType)
+            {
+                case 1:
+                    return GetWordsBeginnerCollection();
+
+                case 2:
+                    return GetWordsIntermediateCollection();
+
+                case 3:
+                    return GetWordsAdvancedCollection();
+
+                default:
+                    throw new ArgumentException(nameof(collectionType));
+            }
         }
     }
 }

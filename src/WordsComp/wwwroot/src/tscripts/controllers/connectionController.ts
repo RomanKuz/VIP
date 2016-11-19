@@ -7,15 +7,19 @@ module controllers {
         private groupInfo: Models.Group;
         private stateHandler: Interfaces.IStateHandler;
         private $rootScope: Interfaces.IRootScope;
+        private coockieService: Interfaces.ICookieService;
 
-        static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$rootScope"];
-        constructor(connectionHubService: Interfaces.IConnectToGame, $scope: Interfaces.IConnectToGameScope, 
+        static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$rootScope", "Services.CookieService"];
+        constructor(connectionHubService: Interfaces.IConnectToGame, 
+                    $scope: Interfaces.IConnectToGameScope, 
                     stateHandler: Interfaces.IStateHandler,
-                    $rootScope: Interfaces.IRootScope) {
+                    $rootScope: Interfaces.IRootScope,
+                    coockieService: Interfaces.ICookieService) {
             this.connectionHubService = connectionHubService;
             this.$scope = $scope;
             this.stateHandler = stateHandler;
             this.$rootScope = $rootScope;
+            this.coockieService = coockieService;
             this.initializeViewModel();
         }
 
@@ -38,7 +42,19 @@ module controllers {
                                  ];
             this.$rootScope.level = this.$scope.levels[1];
             this.$scope.changeLevel = (level: Models.ILevelNamePair) => this.$rootScope.level = level;
-            this.$rootScope.displayName = "Случайный игрок"
+
+            var displayNameFromCookies = "Случайный игрок";
+            try {
+                let cookieValue = this.coockieService.getCookie("displayName");
+                if (cookieValue !== "") {
+                    displayNameFromCookies = cookieValue;
+                }
+            }
+            catch (error) {
+                console.log(error);
+            }
+
+            this.$rootScope.displayName = displayNameFromCookies;
         }
 
         private onGroupFulled(groupInfo: Models.Group): void {
@@ -52,7 +68,16 @@ module controllers {
         }
 
         private connectToGroup(): void {
-            var promise = this.connectionHubService.connectToNewGroup(this.stateHandler.getUserDisplayName(),
+            let displayName = this.stateHandler.getUserDisplayName();
+
+            try {
+                this.coockieService.setCookie("displayName", displayName);
+            }
+            catch (error) {
+                console.log(error);
+            }
+
+            var promise = this.connectionHubService.connectToNewGroup(displayName,
                                                                       this.$rootScope.level.level);
             this.stateHandler.handleConnectionToGroup(promise);
         }

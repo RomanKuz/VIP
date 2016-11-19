@@ -107,14 +107,9 @@ module Services {
         }
 
         public handleConnectionToGroup(promise: JQueryPromise<any>): void {
-            promise.fail((error) => {
-                console.log("smth bad happened: " + error);
-            })
-
             this.callInDigestLoop(() => {
-                    this.callInDigestLoop(() => {
-                        var addedToGroup = this.addedToGroupObservable
-                                               .take(1);
+                        let addedToGroup = this.addedToGroupObservable
+                                                        .take(1);
 
                         this.$rootScope.addedToGroupPromise = toPromiseCustom(addedToGroup);
 
@@ -125,7 +120,7 @@ module Services {
                             }
                         });
                         
-                        var groupFulled = this.groupFulledObservable
+                        let groupFulled = this.groupFulledObservable
                                               .take(1);
 
                         // BUG: For some reason somethimes is not resolved
@@ -133,17 +128,18 @@ module Services {
 
                         groupFulled.subscribe(() => {
                                 this.$rootScope.loadingGamePromise = toPromiseCustom(Rx.Observable.merge(this.userLeftGroupObservable.take(1),
-                                                                                                            this.gameStartedObservable.take(1))
-                                                                                                    .take(1));
+                                                                                                         this.gameStartedObservable.take(1))
+                                                                                                  .take(1));
                             });
 
                         this.$rootScope.isStartGamePage = true;
-                    });
+
+                        this.connectToGameScope.connectToGroupPromise = promise;
             });
 
-            this.callInDigestLoop(() => {
-                this.connectToGameScope.connectToGroupPromise = promise;
-            });
+            promise.fail((error) => {
+                console.log("smth bad happened: " + error);
+            })
         }
 
         public handleUserAddedToGroup(): void {

@@ -49,6 +49,7 @@ module controllers {
                 this.$scope.percentagesLeft = null;
                 this.$scope.isCurrentUserMove = null;
                 this.$scope.currentUserScore = null;
+                this.$scope.user2Score = null;
                 this.$scope.passedWords = [];
                 this.$scope.leftWords = [];
             });

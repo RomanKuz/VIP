@@ -14,6 +14,6 @@ namespace DAL
 
         public string Definition { get; set; }
 
-        public int WordLevel { get; set; }
+        public int WordIndex { get; set; }
     }
 }
