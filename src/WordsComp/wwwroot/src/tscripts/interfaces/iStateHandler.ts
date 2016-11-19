@@ -10,12 +10,14 @@ module Interfaces {
         
         handleGameStarted(): void;
 
-        handleConnectionToHub(promise: JQueryPromise<any>): void;
+        showStartGameWindow(): void;
 
         getUserId(): string;
         setUserId(userId: string): void;
         getUserDisplayName(): string;
 
         setConnectToGameScope(connectToGameScope: Interfaces.IConnectToGameScope): void;
+
+        handleDisconnectedFromHub(): void;
     }
 }

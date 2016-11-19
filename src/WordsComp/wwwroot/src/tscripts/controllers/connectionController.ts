@@ -8,6 +8,8 @@ module controllers {
         private stateHandler: Interfaces.IStateHandler;
         private $rootScope: Interfaces.IRootScope;
         private coockieService: Interfaces.ICookieService;
+        private displayNameCookieKey: string;
+        private levelCookieKey: string;
 
         static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$rootScope", "Services.CookieService"];
         constructor(connectionHubService: Interfaces.IConnectToGame, 
@@ -20,6 +22,8 @@ module controllers {
             this.stateHandler = stateHandler;
             this.$rootScope = $rootScope;
             this.coockieService = coockieService;
+            this.displayNameCookieKey = "displayName";
+            this.levelCookieKey = "levelName";
             this.initializeViewModel();
         }
 
@@ -31,23 +35,29 @@ module controllers {
             this.connectionHubService.onConnectedToGroup(data => this.onConnectedToGroup.call(this, data));
             this.$scope.connectToGroup = () => this.connectToGroup.apply(this);
 
-            var promise = this.connectionHubService.connectToHub().done(value => {
+            this.connectionHubService.onConnectToHub(value => {
                 this.stateHandler.setUserId(value);
             });
-            this.stateHandler.handleConnectionToHub(promise);
+            this.connectionHubService.onDisconnectedFromHub(() => this.stateHandler.handleDisconnectedFromHub());
+            
             this.$scope.levels = [
                                   {level: Models.Level.Beginer, name: "Новачок"},
                                   {level: Models.Level.Intermediate, name: "Средний"},
                                   {level: Models.Level.Advanced, name: "Высокий"}
                                  ];
-            this.$rootScope.level = this.$scope.levels[1];
             this.$scope.changeLevel = (level: Models.ILevelNamePair) => this.$rootScope.level = level;
 
-            var displayNameFromCookies = "Случайный игрок";
+            let displayNameFromCookies = "Случайный игрок";
+            let levelFromCookies = 2; // Intermediate by default
             try {
-                let cookieValue = this.coockieService.getCookie("displayName");
+                let cookieValue = this.coockieService.getCookie(this.displayNameCookieKey);
                 if (cookieValue !== "") {
                     displayNameFromCookies = cookieValue;
+                }
+
+                cookieValue = this.coockieService.getCookie(this.levelCookieKey);
+                if (cookieValue !== "") {
+                    levelFromCookies = parseInt(cookieValue) || levelFromCookies;
                 }
             }
             catch (error) {
@@ -55,6 +65,9 @@ module controllers {
             }
 
             this.$rootScope.displayName = displayNameFromCookies;
+            this.$rootScope.level = this.$scope.levels[levelFromCookies - 1];
+
+            this.stateHandler.showStartGameWindow();
         }
 
         private onGroupFulled(groupInfo: Models.Group): void {
@@ -69,16 +82,18 @@ module controllers {
 
         private connectToGroup(): void {
             let displayName = this.stateHandler.getUserDisplayName();
+            let level = this.$rootScope.level.level;
 
             try {
-                this.coockieService.setCookie("displayName", displayName);
+                this.coockieService.setCookie(this.displayNameCookieKey, displayName);
+                this.coockieService.setCookie(this.levelCookieKey, level);
             }
             catch (error) {
                 console.log(error);
             }
 
             var promise = this.connectionHubService.connectToNewGroup(displayName,
-                                                                      this.$rootScope.level.level);
+                                                                      level);
             this.stateHandler.handleConnectionToGroup(promise);
         }
 

@@ -4,6 +4,7 @@ module Services {
         private hub: SignalR.Hub.Proxy;
         private connection: SignalR.Hub.Connection;
         private constants: Common.Constants;
+        private onConnectedToHubCallback:(userId: string) => void
 
         static $inject = ["Services.HubConnectionService"];
         constructor(hubConnectionService: Interfaces.IHubConnection) {
@@ -12,8 +13,12 @@ module Services {
             this.hub = this.connection.createHubProxy(this.constants.competitionHub);
         }
 
-        public connectToHub(): JQueryPromise<any> {
+        private connectToHub(): JQueryPromise<any> {
             return this.hub.connection.start();
+        }
+
+        public onConnectToHub(callBack:(userId: string) => void): void {
+            this.onConnectedToHubCallback = callBack;
         }
 
         public doMove(moveOrder: number, word: string, variant:string): JQueryPromise<Models.MoveResult> {
@@ -24,7 +29,19 @@ module Services {
             return this.hub.invoke(this.constants.passMove, moveOrder);
         }
 
+        private connectToNewGroupImpl(displayName: string, level: Models.Level) {
+            return this.hub.invoke(this.constants.hubConnectToGroupMethodName, displayName, level);
+        }
+
         public connectToNewGroup(displayName: string, level: Models.Level): JQueryPromise<any> {
+            if (this.connection.state === 4) {
+                return this.connectToHub()
+                        .then(values => {
+                            this.onConnectedToHubCallback(values.id);
+                            return this.hub.invoke(this.constants.hubConnectToGroupMethodName, displayName, level)
+                        });
+            }
+
             return this.hub.invoke(this.constants.hubConnectToGroupMethodName, displayName, level);
         }
 
@@ -52,6 +69,16 @@ module Services {
 
         public gameFinished(callBack:(group: Models.Game) => void): void {
             this.hub.on(this.constants.gameFinished, (msg) => callBack(msg[0]));
+        }
+
+        public onDisconnectedFromHub(callBack:() => void): void {
+            this.connection.disconnected(callBack);
+        }
+
+        public stopHubConnection(): void {
+            if (this.connection.state !== 4) {
+                this.connection.stop();
+            }
         }
     }
 

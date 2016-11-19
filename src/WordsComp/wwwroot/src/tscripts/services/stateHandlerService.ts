@@ -118,6 +118,8 @@ module Services {
                                 this.startGameModalInstance.close();
                                 this.startGameModalInstance = null;
                             }
+
+                            this.$rootScope.isStartGamePage = true;
                         });
                         
                         let groupFulled = this.groupFulledObservable
@@ -132,8 +134,6 @@ module Services {
                                                                                                   .take(1));
                             });
 
-                        this.$rootScope.isStartGamePage = true;
-
                         this.connectToGameScope.connectToGroupPromise = promise;
             });
 
@@ -146,20 +146,10 @@ module Services {
             this.addedToGroupObservable.onNext({});
         }
 
-        public handleConnectionToHub(promise: JQueryPromise<any>): void {
-            promise.fail(() => {
-                console.log("smth bad happened");
-            });
-
-            promise.done(() => {
-                    this.callInDigestLoop(() => {
+        public showStartGameWindow(): void {
+            this.callInDigestLoop(() => {
                         this.showStartGameModal();
                     });
-            });
-
-            this.callInDigestLoop(() => {
-                this.$rootScope.connectToHubPromise = promise;
-            });
         }
 
         public handleGameFinished(isWin?: boolean, isDraw?: boolean): void {
@@ -207,6 +197,16 @@ module Services {
 
         public getUserDisplayName(): string {
             return this.$rootScope.displayName;
+        }
+
+        public handleDisconnectedFromHub(): void {
+            if (this.$rootScope.isStartGamePage) {
+                this.callInDigestLoop(() => {
+                    // TODO: Show somehow that something was wrong with connection
+                    this.$rootScope.isStartGamePage = false;
+                    this.showStartGameModal();
+                });
+            }
         }
     }
 

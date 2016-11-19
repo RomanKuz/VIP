@@ -14,6 +14,8 @@
 
         public int SelectedVariantIndex { get; set; }
 
+        public bool IsSkipped { get; set; }
+
         public GameResult GameResult { get; set; }
     }
 }

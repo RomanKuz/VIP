@@ -12,5 +12,7 @@ module Models {
         public gameResult: Models.GameResult;
 
         public selectedVariantIndex: number;
+
+        public isSkipped: boolean;
     }
 }

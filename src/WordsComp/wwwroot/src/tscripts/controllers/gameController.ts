@@ -181,6 +181,14 @@ module controllers {
         private handleMove(moveRes: Models.MoveResult, isCurrentUserMove) {
             this.stopTimer();
 
+            // if it is skipped, then set timer manually to 0
+            // because timer on both side may show different time by that time
+            // e.g. one could have 0 and other player could have 1
+            if (moveRes.isSkipped) {
+                this.$scope.secondsForMoveLeft = 0;
+                this.$scope.percentagesLeft = 0;
+            }
+
             var currentUserScore = this.userNum === 1 ? this.gameInfo.user1Score : this.gameInfo.user2Score;
             var user2Score = this.userNum === 1 ? this.gameInfo.user2Score : this.gameInfo.user1Score;
 
@@ -241,6 +249,7 @@ module controllers {
                     this.stateHandler.handleGameFinished(this.$scope.currentUserScore.successfulMoves > this.$scope.user2Score.successfulMoves,
                                                          this.$scope.currentUserScore.successfulMoves == this.$scope.user2Score.successfulMoves);
                     this.unsetGameInfo();
+                    this.connectionHubService.stopHubConnection();
                 } else {
                     this.startTimer();
                 }

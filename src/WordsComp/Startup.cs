@@ -110,9 +110,10 @@ namespace WordsComp
             app.MapWhen(context =>
             {
                 var path = context.Request.Path.Value;
-                return path.EndsWith(".html") 
-                    || path.EndsWith(".js")
-                    || path.EndsWith(".css");
+                return path.EndsWith(".html")
+                       || path.EndsWith(".js")
+                       || path.EndsWith(".css")
+                       || path.EndsWith(".ico");
             }, config => config.UseStaticFiles(new StaticFileOptions()
             {
                 FileProvider = fileProvider

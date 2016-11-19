@@ -174,7 +174,8 @@ namespace BLogic.Models
                 ErrorMessage = string.Empty,
                 NextMoveUserId = userId,
                 IsSuccessful = false,
-                SelectedVariantIndex = -1
+                SelectedVariantIndex = -1,
+                IsSkipped = true
             };
 
             GameResult gameRes;

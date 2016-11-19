@@ -22,5 +22,8 @@ namespace WordsComp.RestModels
 
         [JsonProperty("gameResult")]
         public GameResultModel GameResult { get; set; }
+
+        [JsonProperty("isSkipped")]
+        public bool IsSkipped { get; set; }
     }
 }
