@@ -33,6 +33,7 @@ module controllers {
             this.$scope.doMove = (variant: string) => this.doMove.call(this, variant);
             this.connectionHubService.onUserLeft(() => this.onUserLeft.call(this));
             this.unsetGameInfo();
+            this.stateHandler.setUpGameScope(this.$scope);
         }
 
         private onUserLeft(): void {

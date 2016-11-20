@@ -1,5 +1,6 @@
 module Interfaces {
     export interface IStateHandler {
+        setUpGameScope($gameScope: Interfaces.IGameScope): void;
         handleGameFinished(isWin?: boolean, isDraw?: boolean): void;
 
         handleConnectionToGroup(promise: JQueryPromise<any>): void;

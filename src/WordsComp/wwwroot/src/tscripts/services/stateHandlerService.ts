@@ -1,14 +1,23 @@
 /// <reference path="../interfaces.ts" />
 /// <reference path="../mixins/ngScheduler.ts" />
 module Services {
-    function toPromiseCustom<T>(observable: Rx.IObservable<T>): Promise <any> {
-        let promise = new Promise<any>(resolve => {
-            observable.subscribe(() => {
-                resolve({});
+    function toPromiseCustom<T>(observable: Rx.IObservable<T>, $scope: ng.IScope, id?: string): JQueryPromise <any> {
+        let deffered = $.Deferred();
+        observable.subscribe(() => {
+                if (!$scope.$$phase) {
+                    if (id === "test") {
+                        debugger;
+                    }
+                    $scope.$apply(() => deffered.resolve());
+                } else {
+                    if (id === "test") {
+                        debugger;
+                    }
+                    deffered.resolve();
+                }
             });
-        });
 
-        return promise;
+        return deffered;
     }
 
     interface IModalSettings extends ng.ui.bootstrap.IModalSettings {
@@ -33,6 +42,7 @@ module Services {
         private $rootScope: Interfaces.IRootScope;
         private $modal: angular.ui.bootstrap.IModalService;
         private connectToGameScope: Interfaces.IConnectToGameScope;
+        private $gameScope: Interfaces.IGameScope;
         private groupFulledObservable: Rx.Subject<any>;
         private addedToGroupObservable: Rx.Subject<any>;
         private userLeftGroupObservable: Rx.Subject<any>;
@@ -51,6 +61,10 @@ module Services {
             this.addedToGroupObservable = new Rx.Subject<any>();
             this.userLeftGroupObservable = new Rx.Subject<any>();
             this.gameStartedObservable = new Rx.Subject<any>();
+        }
+
+        public setUpGameScope($gameScope: Interfaces.IGameScope): void {
+            this.$gameScope = $gameScope;
         }
 
         private callInDigestLoop(action:() => void) {
@@ -111,7 +125,7 @@ module Services {
                         let addedToGroup = this.addedToGroupObservable
                                                         .take(1);
 
-                        this.$rootScope.addedToGroupPromise = toPromiseCustom(addedToGroup);
+                        this.$gameScope.addedToGroupPromise = toPromiseCustom(addedToGroup, this.$gameScope);
 
                         addedToGroup.subscribe(() => {
                             if (this.startGameModalInstance) {
@@ -125,13 +139,14 @@ module Services {
                         let groupFulled = this.groupFulledObservable
                                               .take(1);
 
+                        debugger;
                         // BUG: For some reason somethimes is not resolved
-                        this.$rootScope.user2ConnectedPromise = toPromiseCustom(groupFulled);
+                        this.$gameScope.user2ConnectedPromise = toPromiseCustom(groupFulled, this.$gameScope, "test");
 
                         groupFulled.subscribe(() => {
-                                this.$rootScope.loadingGamePromise = toPromiseCustom(Rx.Observable.merge(this.userLeftGroupObservable.take(1),
+                                this.$gameScope.loadingGamePromise = toPromiseCustom(Rx.Observable.merge(this.userLeftGroupObservable.take(1),
                                                                                                          this.gameStartedObservable.take(1))
-                                                                                                  .take(1));
+                                                                                                  .take(1), this.$gameScope);
                             });
 
                         this.connectToGameScope.connectToGroupPromise = promise;
@@ -162,6 +177,7 @@ module Services {
         public handleGroupFulled(): void {
             // TODO: Better to implement scheduler to subscribe within ng scope
             this.callInDigestLoop(() => {
+                debugger;
                 this.groupFulledObservable.onNext({});
             });
         }

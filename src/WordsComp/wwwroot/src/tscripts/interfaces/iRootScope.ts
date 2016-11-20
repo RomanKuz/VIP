@@ -2,10 +2,7 @@
 /// <reference path="../models/models.ts" />
 module Interfaces {
     export interface IRootScope extends ng.IScope {
-        loadingGamePromise: Promise <any>;
-        addedToGroupPromise: Promise <any>;
-        user2ConnectedPromise: Promise <any>;
-
+        
         isStartGamePage: boolean;
 
         userId: string;
