@@ -28,13 +28,14 @@ var customTsScripts = [`${customTsSrc}/common.ts`,
 
 var dependenciesTsScripts = [`${dependenciesTsSrc}/angular/angular.js`,
     `${dependenciesTsSrc}/jquery/dist/jquery.js`,
-    `${dependenciesTsSrc}/signalr/jquery.signalr.js`,
+    `${dependenciesTsSrc}/signalr/jquery.signalR.min.js`, // not minified file, minified is broken
     `${dependenciesTsSrc}/angular-animate/angular-animate.js`,
     `${dependenciesTsSrc}/bootstrap-less/js/bootstrap.js`,
     `${dependenciesTsSrc}/angular-bootstrap-npm/dist/angular-bootstrap.js`,
     `${dependenciesTsSrc}/rx/dist/rx.lite.js`,
     `${dependenciesTsSrc}/rx-angular/dist/rx.angular.js`,
-    `${dependenciesTsSrc}/angular-busy/dist/angular-busy.js`
+    `${dependenciesTsSrc}/spin.js/spin.js`,
+    `${dependenciesTsSrc}/angular-spinner/angular-spinner.js`
 ];
 
 var shouldBeMinified = false;
@@ -43,7 +44,9 @@ function customiseEnv(env) {
     if (env === 'prod') {
         shouldBeMinified = true;
         dependenciesTsScripts.forEach(function(value, index) {
-            dependenciesTsScripts[index] = value.replace('.js', '.min.js');
+            if (dependenciesTsScripts[index].indexOf('.min.js') === -1) {
+                dependenciesTsScripts[index] = value.replace(new RegExp('.js$'), '.min.js');
+            }
         });
         dest = path.join(__dirname, './dist');
     } else {
@@ -73,9 +76,7 @@ gulp.task('customTs', function() {
 
 gulp.task('globalTs', function() {
     gulp.src(dependenciesTsScripts)
-        .pipe(sourcemaps.init())
         .pipe(concat('global.js'))
-        .pipe(sourcemaps.write())
         .pipe(gulp.dest(dest));
 });
 

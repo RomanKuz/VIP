@@ -13,6 +13,8 @@ module controllers {
         private timerPromise: ng.IPromise<any>;
         private $timeout: ng.ITimeoutService;
 
+        private quates: Array<string>;
+
         static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$interval", '$timeout'];
         constructor(connectionHubService: Interfaces.IConnectToGame, $scope: Interfaces.IGameScope, 
                     stateHandler: Interfaces.IStateHandler,
@@ -24,16 +26,37 @@ module controllers {
             this.$interval = $interval;
             this.secondsForMove = 10;
             this.$timeout = $timeout;
+            this.quates = ["How many languages you know — that many times you are a person",
+                           "If you talk to a man in a language he understands, that goes to his head. If you talk to him in his language, that goes to his heart",
+                           "By words the mind is winged",
+                           "Language is the means of getting an idea from my brain into yours without surgery",
+                           "A different language is a different vision of life",
+                           "To have another language is to possess a second soul",
+                           "If we spoke a different language, we would perceive a somewhat different world",
+                           "Language exerts hidden power, like the moon on the tides",
+                           "Language is the road map of a culture. It tells you where its people come from and where they are going",
+                           "He who does not know foreign languages does not know anything about his own"];
             this.initializeViewModel();
         }
 
         private initializeViewModel():void {
             this.connectionHubService.gameStarted(data => this.startGame.call(this, data));
             this.connectionHubService.didMove(data => this.user2didMove.call(this, data));
+            this.connectionHubService.onGroupFulled(data => this.handleGroupFulled.call(this, data));
             this.$scope.doMove = (variant: string) => this.doMove.call(this, variant);
             this.connectionHubService.onUserLeft(() => this.onUserLeft.call(this));
             this.unsetGameInfo();
             this.stateHandler.setUpGameScope(this.$scope);
+            let randomQuateIndex = Math.floor(Math.random() * this.quates.length);
+            this.$scope.randomQuate = this.quates[randomQuateIndex];
+        }
+
+        private handleGroupFulled(group: Models.Group): void {
+            this.callInDigestLoop(() => {
+                const isUser1 = group.usersList[0].userId === this.stateHandler.getUserId();
+                this.$scope.user2DisplayName = isUser1 ? group.usersList[0].displayName 
+                                                    : group.usersList[1].displayName;
+            });
         }
 
         private onUserLeft(): void {
@@ -65,7 +88,7 @@ module controllers {
             this.$scope.$apply(() => {
                       this.$scope.currentUserScore = isUser1 ? game.user1Score : game.user2Score;
                       this.$scope.user2Score = !isUser1 ? game.user1Score : game.user2Score;
-                      this.$scope.user2DisplayName = !isUser1 ? game.user1.displayName : game.user2.displayName;
+                      
                       this.$scope.currentWordIndex = 0;
                       this.$scope.currentWord = this.words[0];
                       this.setVarinatsOrder();

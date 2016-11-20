@@ -41,6 +41,7 @@ module Services {
         private constants: Common.Constants;
         private $rootScope: Interfaces.IRootScope;
         private $modal: angular.ui.bootstrap.IModalService;
+        private usSpinnerService: ISpinnerService;
         private connectToGameScope: Interfaces.IConnectToGameScope;
         private $gameScope: Interfaces.IGameScope;
         private groupFulledObservable: Rx.Subject<any>;
@@ -50,10 +51,13 @@ module Services {
 
         private startGameModalInstance: angular.ui.bootstrap.IModalServiceInstance;
 
-        static $inject = ["$rootScope", "$uibModal"];
-        constructor($rootScope: Interfaces.IRootScope, $modal: angular.ui.bootstrap.IModalService) {
+        static $inject = ["$rootScope", "$uibModal", "usSpinnerService"];
+        constructor($rootScope: Interfaces.IRootScope, 
+                    $modal: angular.ui.bootstrap.IModalService,
+                    usSpinnerService: ISpinnerService) {
             this.constants = Common.GetConstants();
             this.$modal = $modal;
+            this.usSpinnerService = usSpinnerService;
             this.$rootScope = $rootScope;
             this.$rootScope.isStartGamePage = false;
             this.$rootScope.userId = null;
@@ -116,6 +120,14 @@ module Services {
                 this.startGameModalInstance = this.$modal.open(opt);
         }
 
+        private startSpin<T>(spinKey: string, observable: Rx.IObservable<T>): void {
+            this.usSpinnerService.spin(spinKey);
+
+            observable.subscribe(() => {
+                this.usSpinnerService.stop(spinKey);
+            });
+        }
+
         public setConnectToGameScope(connectToGameScope: Interfaces.IConnectToGameScope): void {
             this.connectToGameScope = connectToGameScope;
         }
@@ -124,8 +136,6 @@ module Services {
             this.callInDigestLoop(() => {
                         let addedToGroup = this.addedToGroupObservable
                                                         .take(1);
-
-                        this.$gameScope.addedToGroupPromise = toPromiseCustom(addedToGroup, this.$gameScope);
 
                         addedToGroup.subscribe(() => {
                             if (this.startGameModalInstance) {
@@ -139,17 +149,15 @@ module Services {
                         let groupFulled = this.groupFulledObservable
                                               .take(1);
 
-                        debugger;
-                        // BUG: For some reason somethimes is not resolved
-                        this.$gameScope.user2ConnectedPromise = toPromiseCustom(groupFulled, this.$gameScope, "test");
+                        this.startSpin('group-fulled', groupFulled);
 
                         groupFulled.subscribe(() => {
-                                this.$gameScope.loadingGamePromise = toPromiseCustom(Rx.Observable.merge(this.userLeftGroupObservable.take(1),
+                                this.startSpin('loading-game', Rx.Observable.merge(this.userLeftGroupObservable.take(1),
                                                                                                          this.gameStartedObservable.take(1))
-                                                                                                  .take(1), this.$gameScope);
+                                                                                                  .take(1));
                             });
 
-                        this.connectToGameScope.connectToGroupPromise = promise;
+                        this.startSpin('connect-to-group', Rx.Observable.fromPromise(promise));
             });
 
             promise.fail((error) => {

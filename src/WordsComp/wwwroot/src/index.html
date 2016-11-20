@@ -27,10 +27,10 @@
             </div>
 
             <!--user2-->
-            <div class="col-md-4 col-md-offset-2 col-xs-8 col-xs-offset-2 user2-info" cg-busy="{promise:user2ConnectedPromise,message:'Ждём игрока'}">
+            <div class="col-md-4 col-md-offset-2 col-xs-8 col-xs-offset-2 user2-info" us-spinner="{top: '35%', radius:10, width:2, length: 5}" spinner-key="group-fulled">
                 <div class="well" ng-class="{'is-user-move-turn': isCurrentUserMove === false}">
                     <span class="text-success">{{user2DisplayName}}</span>
-                    <span class="text-primary">Очки:&nbsp;{{user2Score.successfulMoves || 0}}</span>
+                    <span class="text-primary">{{user2DisplayName ? 'Очки:&nbsp;' + (user2Score.successfulMoves || 0) : ' '}}</span>
                 </div>
             </div>
 
@@ -45,7 +45,13 @@
                     </div>
                 </div>
 
-                <div class="row" cg-busy="{promise:loadingGamePromise,message:'Загрузка игры'}" id="word-element">
+                <div class="row" us-spinner="{radius:15, width:3, length: 10}" spinner-key="loading-game" id="word-element">
+                    <div ng-show="!user2DisplayName" class="panel panel-default" id="wait-user-panel">
+                        <span class="text text-muted">Ждём игрока... </span>
+                        <br />
+                        <br />
+                        <blockquote>{{randomQuate}}</blockquote>
+                    </div>
                     <div ng-show="currentWord" ng-class="{'time-left': secondsForMoveLeft === 0}" class="col-xs-12 word-element-child panel panel-default">
                         <span id="word" class="lead text-capitalize">{{currentWord.word}}</span>
                         <br />
@@ -102,7 +108,7 @@
     </script>
 
     <script type="text/ng-template" id="connectToGroup.html">
-        <div cg-busy='connectToGroupPromise'>
+        <div us-spinner="{radius:10, width:3, length: 10}" spinner-key="connect-to-group">
             <div class="modal-header">
                 <h4>Введите своё имя</h4>
             </div>
@@ -152,32 +158,6 @@
         <div uib-modal-animation-class="fade" modal-in-class="in" ng-style="{'z-index': 1040 + (index && 1 || 0) + index*10}"></div>
     </script>
 
-    <script type="text/ng-template" id="angular-busy.html">
-        <div class="cg-busy-default-wrapper">
-
-            <div class="cg-busy-default-sign">
-
-                <div class="cg-busy-default-spinner">
-                    <div class="bar1"></div>
-                    <div class="bar2"></div>
-                    <div class="bar3"></div>
-                    <div class="bar4"></div>
-                    <div class="bar5"></div>
-                    <div class="bar6"></div>
-                    <div class="bar7"></div>
-                    <div class="bar8"></div>
-                    <div class="bar9"></div>
-                    <div class="bar10"></div>
-                    <div class="bar11"></div>
-                    <div class="bar12"></div>
-                </div>
-
-                <div class="cg-busy-default-text">{{$message}}</div>
-
-            </div>
-
-        </div>
-    </script>
     <script src="/global.js "></script>
     <script src="/custom.js "></script>
     <script src="signalr/hubs "></script>

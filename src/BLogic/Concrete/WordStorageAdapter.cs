@@ -40,7 +40,6 @@ namespace BLogic.Concrete
             var dtoList = await dataContext.GetWordsCollection((int)wordLevel)
                 .Find(Builders<WordDTO>.Filter.In(w => w.WordIndex, wordsNumbers))
                 .ToListAsync();
-            await Task.Delay(30000);
             return dtoList.Select(Mapper.Map<WordBL>).ToList();
         }
     }

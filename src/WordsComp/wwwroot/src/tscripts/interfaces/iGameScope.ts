@@ -2,10 +2,6 @@
 /// <reference path="../models/models.ts" />
 module Interfaces {
     export interface IGameScope extends ng.IScope {
-        loadingGamePromise: JQueryPromise <any>;
-        addedToGroupPromise: JQueryPromise <any>;
-        user2ConnectedPromise: JQueryPromise <any>;
-
         currentUserScore: Models.Score;
 
         user2Score: Models.Score;
@@ -25,5 +21,7 @@ module Interfaces {
 
         secondsForMoveLeft: number;
         percentagesLeft: number;
+
+        randomQuate: string;
     }
 }
