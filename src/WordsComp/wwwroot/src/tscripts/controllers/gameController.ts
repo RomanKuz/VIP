@@ -76,6 +76,7 @@ module controllers {
                 this.$scope.user2Score = null;
                 this.$scope.passedWords = [];
                 this.$scope.leftWords = [];
+                this.$scope.user2DisplayName = null;
             });
         }
 
