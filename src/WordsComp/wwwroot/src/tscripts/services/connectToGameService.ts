@@ -33,12 +33,19 @@ module Services {
             return this.hub.invoke(this.constants.hubConnectToGroupMethodName, displayName, level);
         }
 
-        public connectToNewGroup(displayName: string, level: Models.Level): JQueryPromise<any> {
+        public connectToNewGroup(displayName: string, 
+                                 level: Models.Level, 
+                                 isGameWithFriend:boolean,
+                                 groupId: string): JQueryPromise<any> {
             if (this.connection.state === 4) {
                 return this.connectToHub()
                         .then(values => {
                             this.onConnectedToHubCallback(values.id);
-                            return this.hub.invoke(this.constants.hubConnectToGroupMethodName, displayName, level)
+                            return this.hub.invoke(this.constants.hubConnectToGroupMethodName, 
+                                                   displayName, 
+                                                   level, 
+                                                   isGameWithFriend,
+                                                   groupId || values.id) // create new room if group id is null
                         });
             }
 

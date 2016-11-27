@@ -17,12 +17,17 @@ namespace WordsComp.Hubs
             this.collector = collector;
         }
 
-        public async Task Connect(string displayName, WordLevel level)
+        public async Task Connect(string displayName, 
+                                  WordLevel level,
+                                  bool isGameWithFriend,
+                                  string friendsGroupId)
         {
             if (string.IsNullOrWhiteSpace(displayName)) throw new ArgumentNullException(nameof(displayName));
             if (level == WordLevel.Unknown) throw new ArgumentException(nameof(level));
 
-            await collector.AddUserToQueue(new UserInfo(Context.ConnectionId, displayName, level));
+            await collector.AddUserToQueue(new UserInfo(Context.ConnectionId, displayName, level, false),
+                                           isGameWithFriend,
+                                           friendsGroupId);
         }
 
         public MoveResultModel DoMove(Move move, string word, string variant)

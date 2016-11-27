@@ -2,8 +2,11 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "mongocsharpdriver": "2.3.0-rc1",
-    "NETStandard.Library": "1.6.0"
+    "AutoMapper": "5.2.0",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.1.0",
+    "Microsoft.AspNetCore.StaticFiles": "1.1.0",
+    "mongocsharpdriver": "2.3.0",
+    "NETStandard.Library": "1.6.1"
   },
 
   "frameworks": {

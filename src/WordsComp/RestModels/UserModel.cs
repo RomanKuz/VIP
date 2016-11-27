@@ -10,5 +10,8 @@ namespace WordsComp.RestModels
 
         [JsonProperty("displayName")]
         public string DisplayName { get; set; }
+
+        [JsonProperty("isBot")]
+        public bool IsBot { get; set; }
     }
 }

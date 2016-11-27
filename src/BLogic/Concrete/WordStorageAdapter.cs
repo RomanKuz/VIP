@@ -27,18 +27,9 @@ namespace BLogic.Concrete
                 throw new ArgumentException(nameof(wordLevel));
             }
 
-            long maxNumber = await dataContext.GetWordsCollection((int)wordLevel)
-                                              .CountAsync(new BsonDocument());
-            if (maxNumber < count || count < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count));
-            }
-
-            var rnd = new Random();
-            var wordsNumbers = Enumerable.Range(0, (int)count).Select(_ => rnd.Next(0, (int)maxNumber))
-                                         .ToList();
             var dtoList = await dataContext.GetWordsCollection((int)wordLevel)
-                .Find(Builders<WordDTO>.Filter.In(w => w.WordIndex, wordsNumbers))
+                .Aggregate()
+                .AppendStage<WordDTO>(string.Format("{{ $sample: {{ size: {0} }} }}", count))
                 .ToListAsync();
             return dtoList.Select(Mapper.Map<WordBL>).ToList();
         }

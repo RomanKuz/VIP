@@ -1,4 +1,16 @@
 module Interfaces {
+    export enum StartGameModalState {
+        startNewGame = 1,
+
+        createNewRoom = 2
+    }
+
+    export enum GameMode {
+        onlineWithEverybody = 1,
+
+        withFriend = 2
+    }
+
     export interface IStateHandler {
         setUpGameScope($gameScope: Interfaces.IGameScope): void;
         handleGameFinished(isWin?: boolean, isDraw?: boolean): void;
@@ -12,6 +24,7 @@ module Interfaces {
         handleGameStarted(): void;
 
         showStartGameWindow(): void;
+        showConnectToRoomWindow(): void
 
         getUserId(): string;
         setUserId(userId: string): void;

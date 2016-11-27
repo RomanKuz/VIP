@@ -4,11 +4,15 @@ namespace BLogic.Models
 {
     public class UserInfo
     {
-        public UserInfo(string userId, string displayName, WordLevel gameLevel)
+        public UserInfo(string userId, 
+                        string displayName,
+                        WordLevel gameLevel,
+                        bool isBot)
         {
             UserId = userId;
             DisplayName = displayName;
             GameLevel = gameLevel;
+            IsBot = isBot;
         }
 
         public void ChangeGameLevel(WordLevel wordLevel)
@@ -41,5 +45,7 @@ namespace BLogic.Models
         {
             return UserId.GetHashCode();
         }
+
+        public bool IsBot { get; }
     }
 }

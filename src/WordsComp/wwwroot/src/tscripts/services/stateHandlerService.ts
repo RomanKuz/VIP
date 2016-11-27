@@ -81,6 +81,18 @@ module Services {
             }
         }
 
+        public showConnectToRoomWindow(): void {
+            let opt = {} as ng.ui.bootstrap.IModalSettings;
+                opt.scope = this.connectToGameScope;
+                opt.templateUrl = "connectToRoom.html";
+                opt.windowTemplateUrl = "windowTemplate.html";
+                opt.backdrop = "static";
+                opt.keyboard = false;
+                opt.animation = true;
+                opt.size = "lg";
+                this.startGameModalInstance = this.$modal.open(opt);
+        }
+
         private showStartGameModal(): void {
             let opt = {} as ng.ui.bootstrap.IModalSettings;
                 opt.scope = this.connectToGameScope;

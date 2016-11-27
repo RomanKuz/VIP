@@ -13,7 +13,5 @@ namespace DAL
         public List<string> ExplanationQuotes { get; set; }
 
         public string Definition { get; set; }
-
-        public int WordIndex { get; set; }
     }
 }

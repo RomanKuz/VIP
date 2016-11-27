@@ -27,11 +27,6 @@ namespace BLogic.Concrete
 
         public async Task<Game> StartGame(UserInfo user1, UserInfo user2, string groupId, WordLevel wordLevel)
         {
-            if (user1.GameLevel != user2.GameLevel)
-            {
-                throw new Exception("Different game levels");
-            }
-
             currentGame = new Game(user1, user2, groupId);
             var words = await storageAdapter.GetRandomWords(10, wordLevel);
             currentGame.StartGame(words);

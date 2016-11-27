@@ -10,6 +10,9 @@ module controllers {
         private coockieService: Interfaces.ICookieService;
         private displayNameCookieKey: string;
         private levelCookieKey: string;
+        private existingRoomId: string;
+        private guidRegex: RegExp;
+        private roomIdFromUrl: string;
 
         static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$rootScope", "Services.CookieService"];
         constructor(connectionHubService: Interfaces.IConnectToGame, 
@@ -24,6 +27,7 @@ module controllers {
             this.coockieService = coockieService;
             this.displayNameCookieKey = "displayName";
             this.levelCookieKey = "levelName";
+            this.guidRegex = new RegExp("^[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?$", "i"); // ignore case
             this.initializeViewModel();
         }
 
@@ -33,7 +37,9 @@ module controllers {
             this.connectionHubService.onUserLeft(data => this.onUserLeft.call(this, data));
             this.connectionHubService.onGroupFulled(data => this.onGroupFulled.call(this, data));
             this.connectionHubService.onConnectedToGroup(data => this.onConnectedToGroup.call(this, data));
-            this.$scope.connectToGroup = () => this.connectToGroup.apply(this);
+            this.$scope.connectToGroup = () => this.connectToGroup.call(this, false, null);
+            this.$scope.createAndConnectToCustomRoom = () => this.connectToGroup.call(this, true, null);
+            this.$scope.connectToExistingRoom = () => this.connectToGroup.call(this, true, this.roomIdFromUrl);
 
             this.connectionHubService.onConnectToHub(value => {
                 this.stateHandler.setUserId(value);
@@ -65,9 +71,34 @@ module controllers {
             }
 
             this.$rootScope.displayName = displayNameFromCookies;
-            this.$rootScope.level = this.$scope.levels[levelFromCookies - 1];
+            this.$rootScope.level = this.$scope.levels[levelFromCookies - 1]; 
+            this.$scope.urlWithRoomId = window.location.pathname;
+            this.roomIdFromUrl = this.obtainRoomIdFromUrl();
+            this.$scope.startModalState = Interfaces.StartGameModalState.startNewGame;
 
-            this.stateHandler.showStartGameWindow();
+            if (this.roomIdFromUrl !== "") {
+                this.stateHandler.showConnectToRoomWindow();
+            } else {
+                this.stateHandler.showStartGameWindow();
+            }
+
+            this.$rootScope.$toObservable('userId')
+                           .select(change => change.newValue as string)
+                           .where(id => id != null || id !== "")
+                           .subscribe(id => this.$rootScope.urlForRoom = this.generateUrlForRoom(this.roomIdFromUrl !== ""
+                                ? this.roomIdFromUrl 
+                                : id));
+            this.$rootScope.$toObservable('gameMode')
+                           .select(change => change.newValue as Interfaces.GameMode)
+                           .where(gameMode => gameMode === Interfaces.GameMode.onlineWithEverybody)
+                           .subscribe(_ => this.$rootScope.urlForRoom = "");
+        }
+
+        private obtainRoomIdFromUrl(): string {
+            let pathArray = window.location.pathname.split( '/' );
+            let id = pathArray[1] || "";
+
+            return id.match(this.guidRegex) ? id : "";
         }
 
         private onGroupFulled(groupInfo: Models.Group): void {
@@ -80,7 +111,7 @@ module controllers {
             this.stateHandler.handleUser2LeftGroup();
         }
 
-        private connectToGroup(): void {
+        private connectToGroup(isGameWithFriend: boolean, groupId: string): void {
             let displayName = this.stateHandler.getUserDisplayName();
             let level = this.$rootScope.level.level;
 
@@ -92,14 +123,24 @@ module controllers {
                 console.log(error);
             }
 
+            this.$rootScope.gameMode = isGameWithFriend
+                ? Interfaces.GameMode.withFriend
+                : Interfaces.GameMode.onlineWithEverybody;
+
             var promise = this.connectionHubService.connectToNewGroup(displayName,
-                                                                      level);
+                                                                      level,
+                                                                      isGameWithFriend || false,
+                                                                      groupId);
             this.stateHandler.handleConnectionToGroup(promise);
         }
 
         private onConnectedToGroup(userId: string): void {
             this.stateHandler.setUserId(userId);
             this.stateHandler.handleUserAddedToGroup();
+        }
+
+        private generateUrlForRoom(roomId: string): string {
+            return "http://" + window.location.host + "/" + roomId;
         }
     }
 

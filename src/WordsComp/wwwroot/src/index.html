@@ -47,10 +47,17 @@
 
                 <div class="row" us-spinner="{radius:15, width:3, length: 10}" spinner-key="loading-game" id="word-element">
                     <div ng-show="!user2DisplayName" class="panel panel-default" id="wait-user-panel">
-                        <span class="text text-muted">Ждём игрока... </span>
+                        <span ng-show="$root.gameMode === 1" class="text text-muted">Ждём игрока... </span>
+                        <span ng-show="$root.gameMode === 2" class="text text-muted">Комната создана. Скопируйте и скиньте ссылку другу.</span>
                         <br />
                         <br />
-                        <blockquote>{{randomQuate}}</blockquote>
+                        <blockquote ng-show="$root.gameMode === 1">{{randomQuate}}</blockquote>
+                        <div class="input-group" ng-show="$root.gameMode === 2">
+                            <input id="roomUrl" class="form-control" value="{{$root.urlForRoom}}" readonly></input>
+                            <span class="input-group-btn">
+                                <button data-clipboard-target="#roomUrl" class="btn btn-default">Copy</button>
+                             </span>
+                        </div>
                     </div>
                     <div ng-show="currentWord" ng-class="{'time-left': secondsForMoveLeft === 0}" class="col-xs-12 word-element-child panel panel-default">
                         <span id="word" class="lead text-capitalize">{{currentWord.word}}</span>
@@ -113,21 +120,63 @@
                 <h4>Введите своё имя</h4>
             </div>
             <div class="modal-body">
-                <div class="dropdown">
-                    <span class="text text-success">Уровень: </span>
-                    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        {{level.name}}
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                        <li ng-repeat="x in levels"><a href="#" ng-click="changeLevel(x)">{{x.name}}</a></li>
-                    </ul>
+                <ul class="nav nav-tabs" id="tabContent">
+                    <li class="active"><a href="#play-online" ng-click="startModalState = 1" data-toggle="tab">Онлайн</a></li>
+                    <li><a href="#play-with-friend" ng-click="startModalState = 2" data-toggle="tab">Играть с другом</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="play-online">
+                        <br />
+                        <div class="dropdown">
+                            <span class="text text-success">Уровень: </span>
+                            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                             {{level.name}}
+                            <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                <li ng-repeat="x in levels"><a href="#" ng-click="changeLevel(x)">{{x.name}}</a></li>
+                            </ul>
+                        </div>
+                        <br />
+                        <input class="form-control" type="textarea" placeholder="Ваше имя :)" ng-model="$root.displayName"></input>
+                    </div>
+
+                    <div class="tab-pane" id="play-with-friend">
+                        <br />
+                        <div class="dropdown">
+                            <span class="text text-success">Уровень: </span>
+                            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                             {{level.name}}
+                            <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                <li ng-repeat="x in levels"><a href="#" ng-click="changeLevel(x)">{{x.name}}</a></li>
+                            </ul>
+                        </div>
+                        <br />
+                        <input class="form-control" type="textarea" placeholder="Ваше имя :)" ng-model="$root.displayName"></input>
+                    </div>
                 </div>
-                <br />
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default btn-submit" ng-show="startModalState === 1" ng-click="connectToGroup()">Начать игру</button>
+                <button class="btn btn-default btn-submit" ng-show="startModalState === 2" ng-click="createAndConnectToCustomRoom()">Создать комнату</button>
+            </div>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="connectToRoom.html">
+        <div us-spinner="{radius:10, width:3, length: 10}" spinner-key="connect-to-group">
+            <div class="modal-header">
+                <h4>Подключится к комнате</h4>
+            </div>
+            <div class="modal-body">
                 <input class="form-control" type="textarea" placeholder="Ваше имя :)" ng-model="$root.displayName"></input>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-default btn-submit" ng-click="connectToGroup()">Начать игру</button>
+                <button class="btn btn-default btn-submit" ng-click="connectToExistingRoom()">Подключится</button>
             </div>
         </div>
     </script>

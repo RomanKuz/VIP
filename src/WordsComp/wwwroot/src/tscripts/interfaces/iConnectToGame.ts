@@ -4,7 +4,10 @@ module Interfaces {
     export interface IConnectToGame {
         onConnectToHub(callBack:(userId: string) => void): void;
 
-        connectToNewGroup(displayName: string, level: Models.Level): JQueryPromise<any>
+        connectToNewGroup(displayName: string, 
+                          level: Models.Level, 
+                          isGameWithFriend:boolean,
+                          groupId: string): JQueryPromise<any>
 
         doMove(moveOrder: number, word: string, variant:string): JQueryPromise<Models.MoveResult>
 

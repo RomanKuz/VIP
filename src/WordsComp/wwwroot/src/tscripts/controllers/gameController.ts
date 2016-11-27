@@ -12,6 +12,8 @@ module controllers {
         private secondsForMove: number;
         private timerPromise: ng.IPromise<any>;
         private $timeout: ng.ITimeoutService;
+        private botForGame: Models.Bot;
+        private isGameWithBot: boolean;
 
         private quates: Array<string>;
 
@@ -54,8 +56,16 @@ module controllers {
         private handleGroupFulled(group: Models.Group): void {
             this.callInDigestLoop(() => {
                 const isUser1 = group.usersList[0].userId === this.stateHandler.getUserId();
-                this.$scope.user2DisplayName = isUser1 ? group.usersList[0].displayName 
-                                                    : group.usersList[1].displayName;
+                this.$scope.user2DisplayName = isUser1 ? group.usersList[1].displayName 
+                                                    : group.usersList[0].displayName;
+                let user2 = isUser1 ? group.usersList[1] : group.usersList[0];
+                
+                if (user2.isBot) {
+                    this.botForGame = new Models.Bot();
+                    this.isGameWithBot = true;
+                } else {
+                    this.isGameWithBot = false;
+                }
             });
         }
 
@@ -66,6 +76,8 @@ module controllers {
 
         private unsetGameInfo(): void {
             this.gameInfo = null;
+            this.botForGame = null;
+            this.isGameWithBot = null;
 
             this.callInDigestLoop(() => {
                 this.$scope.currentWord = null;
@@ -140,11 +152,20 @@ module controllers {
                 this.$scope.percentagesLeft = 100;
             });
 
+            if (this.isGameWithBot) {
+                this.botForGame.handleTimerStarted(10);
+            }
+            
             this.timerPromise = this.$interval(() => {
                 this.$scope.secondsForMoveLeft--;
                 this.$scope.percentagesLeft = this.$scope.secondsForMoveLeft / 10 * 100;
 
-                if (this.$scope.secondsForMoveLeft === 0
+                if (!this.$scope.isCurrentUserMove
+                    && this.isGameWithBot) {
+                        let variant = this.botForGame.handleTimerTick(this.$scope.secondsForMoveLeft,
+                                                                      this.$scope.currentWord.translateVariants);
+                        this.handleBotMove(variant);
+                } else if (this.$scope.secondsForMoveLeft === 0
                     && this.$scope.isCurrentUserMove) {
                     this.passMove();
                 }
@@ -158,6 +179,15 @@ module controllers {
 
             this.$interval.cancel(this.timerPromise);
             this.timerPromise = null;
+        }
+
+        private handleBotMove(variant: string): void {
+            if (variant === null) {
+                return;
+            }
+
+            this.connectionHubService.doMove(this.userNum === 1 ? 2 : 1, this.$scope.currentWord.word, variant)
+                                     .fail(error => console.log("failed bot move. " + error));
         }
 
         private user2didMove(moveRes: Models.MoveResult): void {

@@ -10,6 +10,7 @@ var less = require('gulp-less');
 var uglify = require('gulp-uglify');
 var ngAnnotate = require('gulp-ng-annotate');
 var gulpCopy = require('gulp-copy');
+var gulpif = require('gulp-if');
 
 const customTsSrc = path.join(__dirname, './src/tscripts');
 var dest = null;
@@ -35,7 +36,8 @@ var dependenciesTsScripts = [`${dependenciesTsSrc}/angular/angular.js`,
     `${dependenciesTsSrc}/rx/dist/rx.lite.js`,
     `${dependenciesTsSrc}/rx-angular/dist/rx.angular.js`,
     `${dependenciesTsSrc}/spin.js/spin.js`,
-    `${dependenciesTsSrc}/angular-spinner/angular-spinner.js`
+    `${dependenciesTsSrc}/angular-spinner/angular-spinner.js`,
+    `${dependenciesTsSrc}/clipboard/dist/clipboard.js`
 ];
 
 var shouldBeMinified = false;
@@ -58,19 +60,16 @@ function customiseEnv(env) {
 var lessDependencies = `${dependenciesTsSrc}/bootstrap-less/bootstrap/bootstrap.less`;
 var customLess = path.join(__dirname, './src/customLess/common.less');
 var cssDependencies = `${dependenciesTsSrc}/angular-busy/angular-busy.css`;
-
 var indexHtmlSrc = path.join(__dirname, './src/index.html');
 
 gulp.task('customTs', function() {
-    var pipeline = gulp.src(customTsScripts)
-        .pipe(sourcemaps.init())
+    gulp.src(customTsScripts)
+        .pipe(gulpif(!shouldBeMinified, sourcemaps.init()))
         .pipe(ts({
             out: 'custom.js'
-        }));
-    if (shouldBeMinified) {
-        pipeline = pipeline.pipe(uglify({ mangle: false })); // mangle: false - quick fix for broken angular DI
-    }
-    pipeline.pipe(sourcemaps.write())
+        }))
+        .pipe(gulpif(shouldBeMinified, uglify({ mangle: false }))) // mangle: false - quick fix for broken angular DI
+        .pipe(gulpif(!shouldBeMinified, sourcemaps.write()))
         .pipe(gulp.dest(dest));
 });
 
@@ -95,17 +94,17 @@ gulp.task('buildIndexHtml', function() {
 
 gulp.task('dependenciesLess', function() {
     gulp.src(lessDependencies)
-        .pipe(sourcemaps.init())
+        .pipe(gulpif(!shouldBeMinified, sourcemaps.init()))
         .pipe(less())
-        .pipe(sourcemaps.write())
+        .pipe(gulpif(!shouldBeMinified, sourcemaps.write()))
         .pipe(gulp.dest(dest));
 });
 
 gulp.task('customLess', function() {
     gulp.src(customLess)
-        .pipe(sourcemaps.init())
+        .pipe(gulpif(!shouldBeMinified, sourcemaps.init()))
         .pipe(less())
-        .pipe(sourcemaps.write())
+        .pipe(gulpif(!shouldBeMinified, sourcemaps.write()))
         .pipe(gulp.dest(dest));
 });
 

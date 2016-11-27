@@ -6,7 +6,9 @@ namespace BLogic.Interfaces
 {
     public interface IUserGroupsCollector
     {
-        Task AddUserToQueue(UserInfo newUser);
+        Task AddUserToQueue(UserInfo newUser,
+                            bool isGameWithFriend = false,
+                            string friendsGroupId = null);
 
         void RemoveUser(string userId);
 

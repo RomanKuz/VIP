@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Authentication;
+using System.Text.RegularExpressions;
 using AutoMapper;
 using BLogic;
 using BLogic.Concrete;
@@ -11,6 +11,7 @@ using BLogic.Interfaces;
 using BLogic.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Hubs;
 using Microsoft.AspNetCore.SignalR.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +30,9 @@ namespace WordsComp
 {
     public class Startup
     {
+        private static readonly Regex guidRegex = new Regex("^/[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?$",
+                                                            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
         private class SimpleInjectorHubActivator : IHubActivator
         {
             private readonly Container container;
@@ -52,12 +56,6 @@ namespace WordsComp
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
 
-            if (env.IsEnvironment("Development"))
-            {
-                // This will push telemetry data through Application Insights pipeline faster, allowing you to view results immediately.
-                builder.AddApplicationInsightsSettings(developerMode: true);
-            }
-
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -67,9 +65,6 @@ namespace WordsComp
         // This method gets called by the runtime. Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
-            services.AddApplicationInsightsTelemetry(Configuration);
-
             services.AddSignalR(options =>
             {
                 options.Hubs.EnableDetailedErrors = true;
@@ -91,9 +86,6 @@ namespace WordsComp
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-
-            app.UseApplicationInsightsRequestTelemetry();
-            app.UseApplicationInsightsExceptionTelemetry();
 
             var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(),
                 env.EnvironmentName == "Development" ? @"wwwroot\dev" : @"wwwroot\dist"));
@@ -118,6 +110,22 @@ namespace WordsComp
             {
                 FileProvider = fileProvider
             }));
+
+            // Match requests for friends room game
+            app.MapWhen(context => guidRegex.IsMatch(context.Request.Path.Value), 
+                branch =>
+                {
+                    branch.Use((context, next) =>
+                    {
+                        context.Request.Path = new PathString("/index.html");
+                        return next();
+                    });
+
+                    branch.UseStaticFiles(new StaticFileOptions()
+                    {
+                        FileProvider = fileProvider
+                    });
+                });
 
             InitializeMapper();
             SetUpDbConnection(env.EnvironmentName);
@@ -178,20 +186,10 @@ namespace WordsComp
             }
             else
             {
+
                 MongoDbInitializerHelper.SetUpMongoClient(new MongoClientSettings
                 {
-                    Server = new MongoServerAddress("document-db-first.documents.azure.com", 10250),
-                    UseSsl = true,
-                    SslSettings = new SslSettings
-                    {
-                        EnabledSslProtocols = SslProtocols.Tls12
-                    },
-                    Credentials = new List<MongoCredential>
-                    {
-                        new MongoCredential("SCRAM-SHA-1",
-                                            new MongoInternalIdentity("WordsStorage", "document-db-first"),
-                                            new PasswordEvidence("vFCq4qvYM0hzofkHqGZzpNlZh21dUQdnUL3ZdGJU9wWhcCzIR26pmGW5CDDXqALKQNE4Gn4UEPTsWRWsqIsQtw=="))
-                    }
+                    Server = new MongoServerAddress("db-server5268.cloudapp.net", 27017),
                 });
             }
         }

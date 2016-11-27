@@ -63,7 +63,11 @@ namespace BLogic.Models
             }
 
             ConnectedUser = connectedUser;
-            await userGroupsProvider.AddUserToGroup(connectedUser.UserId, groupId);
+
+            if (!connectedUser.IsBot)
+            {
+                await userGroupsProvider.AddUserToGroup(connectedUser.UserId, groupId);
+            }
         }
 
         public void DissconnectUser(string userId)
@@ -104,6 +108,15 @@ namespace BLogic.Models
         }
 
         public IGameProvider GameProvider { get; set; }
+
+
+        public void SetUpFriendToConnectGroupId(string id)
+        {
+            if (string.IsNullOrEmpty(id)) throw new ArgumentException("Value cannot be null or empty.", nameof(id));
+            FriendToConnectGroupId = id;
+        }
+
+        public string FriendToConnectGroupId { get; private set; }
     }
 
 }
