@@ -19,6 +19,8 @@ module Interfaces {
 
         onUserLeft(callBack:(group: Models.Group) => void): void;
 
+        onFailedToLoadGame(callBack:() => void): void;
+
         gameStarted(callBack:(group: Models.Game) => void): void;
 
         didMove(callBack:(moveRes: Models.MoveResult) => void): void;

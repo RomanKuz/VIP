@@ -21,5 +21,7 @@ namespace BLogic.Interfaces
         IObservable<string> UserAddedToGroup { get; }
 
         IObservable<IGameProvider> GameStarted { get; }
+
+        IObservable<UserGroup> FailedToLoadGameObservable { get; }
     }
 }

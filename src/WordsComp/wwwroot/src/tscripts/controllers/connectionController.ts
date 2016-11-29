@@ -8,18 +8,20 @@ module controllers {
         private stateHandler: Interfaces.IStateHandler;
         private $rootScope: Interfaces.IRootScope;
         private coockieService: Interfaces.ICookieService;
+        private $log: ng.ILogService;
         private displayNameCookieKey: string;
         private levelCookieKey: string;
         private existingRoomId: string;
         private guidRegex: RegExp;
         private roomIdFromUrl: string;
 
-        static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$rootScope", "Services.CookieService"];
+        static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$rootScope", "Services.CookieService", "$log"];
         constructor(connectionHubService: Interfaces.IConnectToGame, 
                     $scope: Interfaces.IConnectToGameScope, 
                     stateHandler: Interfaces.IStateHandler,
                     $rootScope: Interfaces.IRootScope,
-                    coockieService: Interfaces.ICookieService) {
+                    coockieService: Interfaces.ICookieService,
+                    $log: ng.ILogService) {
             this.connectionHubService = connectionHubService;
             this.$scope = $scope;
             this.stateHandler = stateHandler;
@@ -28,6 +30,7 @@ module controllers {
             this.displayNameCookieKey = "displayName";
             this.levelCookieKey = "levelName";
             this.guidRegex = new RegExp("^[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?$", "i"); // ignore case
+            this.$log = $log;
             this.initializeViewModel();
         }
 
@@ -67,7 +70,7 @@ module controllers {
                 }
             }
             catch (error) {
-                console.log(error);
+                this.$log.error(error);
             }
 
             this.$rootScope.displayName = displayNameFromCookies;
@@ -120,7 +123,7 @@ module controllers {
                 this.coockieService.setCookie(this.levelCookieKey, level);
             }
             catch (error) {
-                console.log(error);
+                this.$log.error(error);
             }
 
             this.$rootScope.gameMode = isGameWithFriend

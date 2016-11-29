@@ -47,6 +47,7 @@ namespace BLogic.Concrete
             private readonly Subject<UserGroup> userLeftGroupObservable;
             private readonly Subject<string> userAddedToGroup;
             private readonly Subject<IGameProvider> gameStarted;
+            private readonly Subject<UserGroup> failedToLoadGameSubject;
 
             private readonly object internalWaitingBeginerUserQueueBotTimerLocker = new object();
             private volatile IDisposable internalWaitingBeginerUserQueueBotTimer;
@@ -64,6 +65,7 @@ namespace BLogic.Concrete
                 userLeftGroupObservable = new Subject<UserGroup>();
                 userAddedToGroup = new Subject<string>();
                 gameStarted = new Subject<IGameProvider>();
+                failedToLoadGameSubject = new Subject<UserGroup>();
             }
 
             static UserGroupsCollector()
@@ -185,9 +187,19 @@ namespace BLogic.Concrete
 
                     var gameProvider = (IGameProvider)serviceProvider.GetService(typeof(IGameProvider));
                     var users = existingGroup.GetUsers();
-                    await gameProvider.StartGame(users[0], users[1], existingGroup.GetGroupId(), users[0].GameLevel);
-                    existingGroup.GameProvider = gameProvider;
-                    gameStarted.OnNext(gameProvider);
+
+                    try
+                    {
+                        await gameProvider.StartGame(users[0], users[1], existingGroup.GetGroupId(), users[0].GameLevel);
+                        existingGroup.GameProvider = gameProvider;
+                        gameStarted.OnNext(gameProvider);
+                    }
+                    catch (Exception ex)
+                    {
+                        // TODO: Log error
+                        failedToLoadGameSubject.OnNext(existingGroup);
+                    }
+                   
 
                     isConnectedToExistingGroup = true;
                 }
@@ -286,6 +298,8 @@ namespace BLogic.Concrete
             public IObservable<UserGroup> GroupFulledObservable => groupFulledSubject;
 
             public IObservable<UserGroup> UserLeftGroupObservable => userLeftGroupObservable;
+
+            public IObservable<UserGroup> FailedToLoadGameObservable => failedToLoadGameSubject;
         }
     }
 

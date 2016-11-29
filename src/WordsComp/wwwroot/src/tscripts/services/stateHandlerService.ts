@@ -48,19 +48,25 @@ module Services {
         private addedToGroupObservable: Rx.Subject<any>;
         private userLeftGroupObservable: Rx.Subject<any>;
         private gameStartedObservable: Rx.Subject<any>;
+        private $log: ng.ILogService;
+        private connectToGameService: Interfaces.IConnectToGame;
 
         private startGameModalInstance: angular.ui.bootstrap.IModalServiceInstance;
 
-        static $inject = ["$rootScope", "$uibModal", "usSpinnerService"];
+        static $inject = ["$rootScope", "$uibModal", "usSpinnerService", "$log", "Services.ConnectToGameService"];
         constructor($rootScope: Interfaces.IRootScope, 
                     $modal: angular.ui.bootstrap.IModalService,
-                    usSpinnerService: ISpinnerService) {
+                    usSpinnerService: ISpinnerService,
+                    $log: ng.ILogService,
+                    connectToGameService: Interfaces.IConnectToGame) {
             this.constants = Common.GetConstants();
             this.$modal = $modal;
             this.usSpinnerService = usSpinnerService;
             this.$rootScope = $rootScope;
             this.$rootScope.isStartGamePage = false;
             this.$rootScope.userId = null;
+            this.$log = $log;
+            this.connectToGameService = connectToGameService;
             this.groupFulledObservable = new Rx.Subject<any>();
             this.addedToGroupObservable = new Rx.Subject<any>();
             this.userLeftGroupObservable = new Rx.Subject<any>();
@@ -146,15 +152,12 @@ module Services {
 
         public handleConnectionToGroup(promise: JQueryPromise<any>): void {
             this.callInDigestLoop(() => {
+                        this.connectToGameScope.connectToGroupErrorMessage = "";
                         let addedToGroup = this.addedToGroupObservable
                                                         .take(1);
 
                         addedToGroup.subscribe(() => {
-                            if (this.startGameModalInstance) {
-                                this.startGameModalInstance.close();
-                                this.startGameModalInstance = null;
-                            }
-
+                            this.closeAllWindows();
                             this.$rootScope.isStartGamePage = true;
                         });
                         
@@ -165,16 +168,42 @@ module Services {
 
                         groupFulled.subscribe(() => {
                                 this.startSpin('loading-game', Rx.Observable.merge(this.userLeftGroupObservable.take(1),
-                                                                                                         this.gameStartedObservable.take(1))
-                                                                                                  .take(1));
+                                                                                   this.gameStartedObservable.take(1))
+                                                                            .take(1));
                             });
+                        
+                        let onFailedToLoadGame = new Rx.Subject<any>();
+                        this.connectToGameService.onFailedToLoadGame(() => onFailedToLoadGame.onNext({}));
+                        onFailedToLoadGame.take(1).subscribe(() => {
+                            this.handleConnectToGroupError("Ошибка при загрузке игры. Попробуйте снова.");
+                        });
 
                         this.startSpin('connect-to-group', Rx.Observable.fromPromise(promise));
             });
 
             promise.fail((error) => {
-                console.log("smth bad happened: " + error);
+                this.$log.error(error);
+
+                this.handleConnectToGroupError("Упс :( Что-то пошло не так. Попробуйте снова.");
             })
+        }
+
+        private handleConnectToGroupError(erroMessage: string) {
+            this.closeAllWindows();
+                this.$rootScope.gameMode === Interfaces.GameMode.onlineWithEverybody 
+                    ? this.showStartGameWindow()
+                    : this.showConnectToRoomWindow();
+                this.$rootScope.isStartGamePage = false;
+
+                this.callInDigestLoop(() => 
+                    this.connectToGameScope.connectToGroupErrorMessage = erroMessage);
+        }
+
+        private closeAllWindows(): void {
+            if (this.startGameModalInstance) {
+                    this.startGameModalInstance.close();
+                    this.startGameModalInstance = null;
+            }
         }
 
         public handleUserAddedToGroup(): void {
@@ -197,7 +226,6 @@ module Services {
         public handleGroupFulled(): void {
             // TODO: Better to implement scheduler to subscribe within ng scope
             this.callInDigestLoop(() => {
-                debugger;
                 this.groupFulledObservable.onNext({});
             });
         }

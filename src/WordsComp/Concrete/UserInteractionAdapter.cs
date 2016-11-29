@@ -83,6 +83,15 @@ namespace WordsComp.Concrete
                     hubGroup.gameStarted(Mapper.Map<GameModel>(game));
                 }
             });
+
+            userGroupsCollector.FailedToLoadGameObservable.Subscribe(g =>
+            {
+                var group = hubContext.Clients.Group(g.GetGroupId());
+                if (group != null)
+                {
+                    group.failedToLoadGame();
+                }
+            });
         }
 
         private void RegisterNewGame(IGameProvider gameProvider)

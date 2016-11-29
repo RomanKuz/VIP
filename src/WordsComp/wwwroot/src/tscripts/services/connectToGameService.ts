@@ -87,6 +87,10 @@ module Services {
                 this.connection.stop();
             }
         }
+
+        public onFailedToLoadGame(callBack:() => void): void {
+            this.hub.on(this.constants.onFailedToLoadGame, () => callBack());
+        }
     }
 
     angular.module(Common.GetConstants().appName).service("Services.ConnectToGameService", ConnectToGameService);

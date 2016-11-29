@@ -10,5 +10,7 @@ module Interfaces {
 
         startModalState: Interfaces.StartGameModalState;
         urlWithRoomId: string;
+
+        connectToGroupErrorMessage: string;
     }
 }

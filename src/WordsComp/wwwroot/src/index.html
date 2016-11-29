@@ -125,6 +125,11 @@
                     <li><a href="#play-with-friend" ng-click="startModalState = 2" data-toggle="tab">Играть с другом</a></li>
                 </ul>
 
+                <br />
+                <div class="alert alert-danger alert-dismissible" ng-show="connectToGroupErrorMessage && connectToGroupErrorMessage !== ''">
+                    {{connectToGroupErrorMessage}}
+                </div>
+
                 <div class="tab-content">
                     <div class="tab-pane active" id="play-online">
                         <br />
