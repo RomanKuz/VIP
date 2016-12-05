@@ -114,9 +114,12 @@ namespace BLogic.Models
         {
             if (string.IsNullOrEmpty(id)) throw new ArgumentException("Value cannot be null or empty.", nameof(id));
             FriendToConnectGroupId = id;
+            IsFriendsRoom = true;
         }
 
         public string FriendToConnectGroupId { get; private set; }
+
+        public bool IsFriendsRoom { get; private set; }
     }
 
 }

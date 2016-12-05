@@ -49,7 +49,7 @@ module Services {
                         });
             }
 
-            return this.hub.invoke(this.constants.hubConnectToGroupMethodName, displayName, level);
+            return this.hub.invoke(this.constants.hubConnectToGroupMethodName, displayName, level, isGameWithFriend, groupId || "");
         }
 
         public onConnectedToGroup(callBack:(userId: string) => void): void {

@@ -1,0 +1,8 @@
+{
+  "resolution": "main",
+  "tree": {
+    "src": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/c34293775dc2ff87dcea7747e974cd1b9ab4f52d/clipboard-js/clipboard-js.d.ts",
+    "raw": "registry:dt/clipboard-js#0.3.1+20161011033759",
+    "typings": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/c34293775dc2ff87dcea7747e974cd1b9ab4f52d/clipboard-js/clipboard-js.d.ts"
+  }
+}

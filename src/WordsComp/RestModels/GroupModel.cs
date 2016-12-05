@@ -11,5 +11,8 @@ namespace WordsComp.RestModels
 
         [JsonProperty("usersList")]
         public List<UserModel> UsersList { get; set; }
+
+        [JsonProperty("isFriendsRoom")]
+        public bool IsFriendsRoom { get; set;}
     }
 }

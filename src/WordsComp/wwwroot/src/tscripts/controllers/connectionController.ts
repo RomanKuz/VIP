@@ -14,6 +14,8 @@ module controllers {
         private existingRoomId: string;
         private guidRegex: RegExp;
         private roomIdFromUrl: string;
+        private roomLevelFromUrl: Models.Level;
+        private createdRoomId: string;
 
         static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$rootScope", "Services.CookieService", "$log"];
         constructor(connectionHubService: Interfaces.IConnectToGame, 
@@ -29,7 +31,7 @@ module controllers {
             this.coockieService = coockieService;
             this.displayNameCookieKey = "displayName";
             this.levelCookieKey = "levelName";
-            this.guidRegex = new RegExp("^[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?$", "i"); // ignore case
+            this.guidRegex = new RegExp("^roomId=[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?&level=[1-3]$", "i"); // ignore case
             this.$log = $log;
             this.initializeViewModel();
         }
@@ -42,7 +44,14 @@ module controllers {
             this.connectionHubService.onConnectedToGroup(data => this.onConnectedToGroup.call(this, data));
             this.$scope.connectToGroup = () => this.connectToGroup.call(this, false, null);
             this.$scope.createAndConnectToCustomRoom = () => this.connectToGroup.call(this, true, null);
-            this.$scope.connectToExistingRoom = () => this.connectToGroup.call(this, true, this.roomIdFromUrl);
+            this.$scope.connectToExistingRoom = (roomId?: string) => {
+                    let id = roomId || this.roomIdFromUrl || this.createdRoomId;
+                    if (!id || id === "") {
+                        throw new Error("No room id is specified");
+                    }
+                    this.connectToGroup.call(this, true, roomId || this.roomIdFromUrl || this.createdRoomId,
+                                             this.roomLevelFromUrl);
+                }
 
             this.connectionHubService.onConnectToHub(value => {
                 this.stateHandler.setUserId(value);
@@ -76,12 +85,19 @@ module controllers {
             this.$rootScope.displayName = displayNameFromCookies;
             this.$rootScope.level = this.$scope.levels[levelFromCookies - 1]; 
             this.$scope.urlWithRoomId = window.location.pathname;
-            this.roomIdFromUrl = this.obtainRoomIdFromUrl();
+            this.roomIdFromUrl = this.getParameterFromUrl("roomId");
+            this.roomLevelFromUrl = parseInt(this.getParameterFromUrl("level"));
+
+            if (this.roomLevelFromUrl) {
+                this.$rootScope.roomLevelFromUrl = this.$scope.levels.filter(v => v.level === this.roomLevelFromUrl)[0];
+            }
             this.$scope.startModalState = Interfaces.StartGameModalState.startNewGame;
 
             if (this.roomIdFromUrl !== "") {
+                this.$rootScope.gameMode = Interfaces.GameMode.withFriend;
                 this.stateHandler.showConnectToRoomWindow();
             } else {
+                this.$rootScope.gameMode = Interfaces.GameMode.onlineWithEverybody;
                 this.stateHandler.showStartGameWindow();
             }
 
@@ -90,18 +106,20 @@ module controllers {
                            .where(id => id != null || id !== "")
                            .subscribe(id => this.$rootScope.urlForRoom = this.generateUrlForRoom(this.roomIdFromUrl !== ""
                                 ? this.roomIdFromUrl 
-                                : id));
+                                : this.createdRoomId || id));
             this.$rootScope.$toObservable('gameMode')
                            .select(change => change.newValue as Interfaces.GameMode)
                            .where(gameMode => gameMode === Interfaces.GameMode.onlineWithEverybody)
                            .subscribe(_ => this.$rootScope.urlForRoom = "");
         }
 
-        private obtainRoomIdFromUrl(): string {
-            let pathArray = window.location.pathname.split( '/' );
-            let id = pathArray[1] || "";
-
-            return id.match(this.guidRegex) ? id : "";
+        private getParameterFromUrl(name: string): string {
+            let url = location.href;
+            name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+            var regexS = "[\\?&/]"+name+"=([^&#]*)";
+            var regex = new RegExp( regexS );
+            var results = regex.exec( url );
+            return results == null ? "" : results[1];
         }
 
         private onGroupFulled(groupInfo: Models.Group): void {
@@ -114,9 +132,9 @@ module controllers {
             this.stateHandler.handleUser2LeftGroup();
         }
 
-        private connectToGroup(isGameWithFriend: boolean, groupId: string): void {
+        private connectToGroup(isGameWithFriend: boolean, groupId: string, level: Models.Level): void {
             let displayName = this.stateHandler.getUserDisplayName();
-            let level = this.$rootScope.level.level;
+            level = level || this.$rootScope.level.level;
 
             try {
                 this.coockieService.setCookie(this.displayNameCookieKey, displayName);
@@ -129,11 +147,18 @@ module controllers {
             this.$rootScope.gameMode = isGameWithFriend
                 ? Interfaces.GameMode.withFriend
                 : Interfaces.GameMode.onlineWithEverybody;
-
-            var promise = this.connectionHubService.connectToNewGroup(displayName,
+            
+            let rootScope = this.$rootScope;
+            let promise = this.connectionHubService.connectToNewGroup(displayName,
                                                                       level,
                                                                       isGameWithFriend || false,
-                                                                      groupId);
+                                                                      groupId)
+                                                   .done(() => {
+                                                       if (isGameWithFriend 
+                                                           && !groupId) {
+                                                               this.createdRoomId = this.createdRoomId || rootScope.userId;
+                                                           }
+                                                   });
             this.stateHandler.handleConnectionToGroup(promise);
         }
 
@@ -143,7 +168,7 @@ module controllers {
         }
 
         private generateUrlForRoom(roomId: string): string {
-            return "http://" + window.location.host + "/" + roomId;
+            return "http://" + window.location.host + "/roomId=" + roomId + "&level=" + this.$rootScope.level.level;
         }
     }
 

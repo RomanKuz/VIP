@@ -14,5 +14,6 @@ module Interfaces {
 
         gameMode: GameMode;
         urlForRoom: string;
+        roomLevelFromUrl: Models.ILevelNamePair;
     }
 }

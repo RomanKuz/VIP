@@ -30,7 +30,7 @@ namespace WordsComp
 {
     public class Startup
     {
-        private static readonly Regex guidRegex = new Regex("^/[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?$",
+        private static readonly Regex guidRegex = new Regex("^/roomId=[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?&level=[1-3]$",
                                                             RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private class SimpleInjectorHubActivator : IHubActivator

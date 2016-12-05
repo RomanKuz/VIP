@@ -145,7 +145,7 @@ namespace BLogic.Concrete
                     throw new ArgumentException(nameof(friendsGroupId));
                 }
 
-                if (!newUser.IsBot)
+                if (!newUser.IsBot && !isGameWithFriend)
                 {
                     DelayBotTimer(newUser.GameLevel);
                 }

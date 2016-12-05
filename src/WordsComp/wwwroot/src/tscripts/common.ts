@@ -7,6 +7,8 @@
 /// <reference path="../typings/globals/rx.angular/index.d.ts" />
 /// <reference path="../typings/globals/angular-animate/index.d.ts" />
 /// <reference path="../typings/globals/angular-spinner/index.d.ts" />
+/// <reference path="../typings/globals/clipboard-js/index.d.ts" />
+/// <reference path="../typings/globals/bootstrap/index.d.ts" />
 module Common {
     export class Constants {
         public appName: string;

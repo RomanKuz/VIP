@@ -117,9 +117,18 @@ module Services {
             }
 
             let connectToGameScope = this.connectToGameScope;
+            let gameScope = this.$gameScope;
+            let rootScope = this.$rootScope;
             let opt = {} as ng.ui.bootstrap.IModalSettings;
                 opt.controller = function($scope: Interfaces.IGameFinishedModalWindowScope) {
-                    $scope.playAgain = connectToGameScope.connectToGroup;
+                    $scope.playAgain = rootScope.gameMode === Interfaces.GameMode.withFriend
+                        ? connectToGameScope.connectToExistingRoom
+                        : connectToGameScope.connectToGroup;
+
+                    $scope.playAgainDisplayMsg = rootScope.gameMode === Interfaces.GameMode.withFriend
+                        ? "Подключится к комнате"
+                        :  "Сыграть ещё";
+                    $scope.shouldShowCancelButton = rootScope.gameMode === Interfaces.GameMode.withFriend;
 
                     if (isDraw) {
                         $scope.message = "Ничья. Отличная игра :D!\nХотите сыграть ещё раз?";
@@ -128,6 +137,8 @@ module Services {
                     } else {
                         $scope.message = "Даже если проиграл, преобретенный опыт останется навсегда с тобой и станет твоей наградой :)\nХотите сыграть ещё раз?";
                     }
+                    $scope.passedWords = gameScope.passedWords.filter(v => v.wasPassed);
+                    $scope.wrongAttemps = gameScope.passedWords.filter(v => !v.wasPassed);
                 }
                 opt.templateUrl = "gameFinished.html";
                 opt.windowTemplateUrl = "windowTemplate.html";

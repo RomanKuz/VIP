@@ -3,6 +3,7 @@
 /// <reference path="globals/angular-ui-bootstrap/index.d.ts" />
 /// <reference path="globals/angular/index.d.ts" />
 /// <reference path="globals/bootstrap/index.d.ts" />
+/// <reference path="globals/clipboard-js/index.d.ts" />
 /// <reference path="globals/es6-shim/index.d.ts" />
 /// <reference path="globals/jquery/index.d.ts" />
 /// <reference path="globals/rx.angular/index.d.ts" />
