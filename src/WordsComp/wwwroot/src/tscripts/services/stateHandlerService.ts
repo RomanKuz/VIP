@@ -111,8 +111,8 @@ module Services {
                 this.startGameModalInstance = this.$modal.open(opt);
         }
 
-        private showGameFinishedModalWindow(isWin?: boolean, isDraw?: boolean): void {
-            if (isWin === undefined && isDraw === undefined) {
+        private showGameFinishedModalWindow(isWin?: boolean, isDraw?: boolean, isUser2Left?: boolean): void {
+            if (isWin === undefined && isDraw === undefined && isUser2Left === undefined) {
                 throw "One of boolean flags should be specified";
             }
 
@@ -134,7 +134,10 @@ module Services {
                         $scope.message = "Ничья. Отличная игра :D!\nХотите сыграть ещё раз?";
                     } else if (isWin) {
                         $scope.message = "Поздравления! Вы выиграли!\nХотите сыграть ещё раз?";
-                    } else {
+                    } else if (isUser2Left) {
+                        $scope.message = "Соперник покинул игру :(";
+                    }
+                    else {
                         $scope.message = "Даже если проиграл, преобретенный опыт останется навсегда с тобой и станет твоей наградой :)\nХотите сыграть ещё раз?";
                     }
                     $scope.passedWords = gameScope.passedWords.filter(v => v.wasPassed);
@@ -186,6 +189,8 @@ module Services {
                         let onFailedToLoadGame = new Rx.Subject<any>();
                         this.connectToGameService.onFailedToLoadGame(() => onFailedToLoadGame.onNext({}));
                         onFailedToLoadGame.take(1).subscribe(() => {
+                            this.usSpinnerService.stop('loading-game');
+                            this.connectToGameService.stopHubConnection();
                             this.handleConnectToGroupError("Ошибка при загрузке игры. Попробуйте снова.");
                         });
 
@@ -194,13 +199,20 @@ module Services {
 
             promise.fail((error) => {
                 this.$log.error(error);
-
+                this.usSpinnerService.stop('loading-game');
+                this.connectToGameService.stopHubConnection();
                 this.handleConnectToGroupError("Упс :( Что-то пошло не так. Попробуйте снова.");
             })
         }
 
         private handleConnectToGroupError(erroMessage: string) {
-            this.closeAllWindows();
+            if (this.startGameModalInstance) {
+                this.callInDigestLoop(() => 
+                    this.connectToGameScope.connectToGroupErrorMessage = this.connectToGameScope.connectToGroupErrorMessage 
+                    || erroMessage);
+                // do not show window again if it is already shown
+                return;
+            }
                 this.$rootScope.gameMode === Interfaces.GameMode.onlineWithEverybody 
                     ? this.showStartGameWindow()
                     : this.showConnectToRoomWindow();
@@ -266,7 +278,7 @@ module Services {
             this.callInDigestLoop(() => {
                 this.userLeftGroupObservable.onNext({});
                 this.$rootScope.isStartGamePage = false;
-                this.showStartGameModal();
+                this.showGameFinishedModalWindow(null, null, true);
             });
         }
 
@@ -279,7 +291,6 @@ module Services {
                 this.callInDigestLoop(() => {
                     // TODO: Show somehow that something was wrong with connection
                     this.$rootScope.isStartGamePage = false;
-                    this.showStartGameModal();
                 });
             }
         }

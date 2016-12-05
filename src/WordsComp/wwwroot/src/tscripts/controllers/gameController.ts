@@ -44,6 +44,7 @@ module controllers {
         private initializeViewModel():void {
             this.connectionHubService.gameStarted(data => this.startGame.call(this, data));
             this.connectionHubService.didMove(data => this.user2didMove.call(this, data));
+            this.connectionHubService.onConnectedToGroup(() => this.unsetGameInfo.call(this))
             this.connectionHubService.onGroupFulled(data => this.handleGroupFulled.call(this, data));
             this.$scope.doMove = (variant: string) => this.doMove.call(this, variant);
             this.connectionHubService.onUserLeft(() => this.onUserLeft.call(this));
@@ -71,6 +72,7 @@ module controllers {
 
         private onUserLeft(): void {
             this.stopTimer();
+            this.stateHandler.handleUser2LeftGroup();
             this.unsetGameInfo();
         }
 

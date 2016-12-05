@@ -129,7 +129,6 @@ module controllers {
 
         private onUserLeft(groupInfo: Models.Group): void {
             this.groupInfo = null;
-            this.stateHandler.handleUser2LeftGroup();
         }
 
         private connectToGroup(isGameWithFriend: boolean, groupId: string, level: Models.Level): void {
@@ -147,6 +146,9 @@ module controllers {
             this.$rootScope.gameMode = isGameWithFriend
                 ? Interfaces.GameMode.withFriend
                 : Interfaces.GameMode.onlineWithEverybody;
+
+            this.$rootScope.roomLevelFromUrl = this.$rootScope.roomLevelFromUrl
+                || this.$rootScope.level;
             
             let rootScope = this.$rootScope;
             let promise = this.connectionHubService.connectToNewGroup(displayName,

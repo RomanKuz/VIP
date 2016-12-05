@@ -1,4 +1,10 @@
 /// <reference path="../common.ts" />
+declare class Clipboard {
+    constructor(selector: string);
+
+    on(event: string, callback: (e:any) => void);
+}
+
 $(() => {
     $(document).keypress(e => {
         if (e.which === 13) {
@@ -28,13 +34,13 @@ $(() => {
     }, 1000);
     }
 
-    var clipboard = new clipboard.Clipboard('#copyToClipboardBtn');
-    clipboard.on('success', function(e) {
+    var cb = new Clipboard('#copyToClipboardBtn');
+    cb.on('success', function(e) {
         setTooltip(e.trigger, 'Copied!');
         hideTooltip(e.trigger);
     });
 
-    clipboard.on('error', function(e) {
+    cb.on('error', function(e) {
         console.log(e);
     });
 });

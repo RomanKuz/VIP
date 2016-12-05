@@ -198,6 +198,7 @@ namespace BLogic.Concrete
                     {
                         // TODO: Log error
                         failedToLoadGameSubject.OnNext(existingGroup);
+                        return;
                     }
                    
 

@@ -178,6 +178,10 @@
                 <h4>Подключится к комнате</h4>
             </div>
             <div class="modal-body">
+                <div class="alert alert-danger alert-dismissible" ng-show="connectToGroupErrorMessage && connectToGroupErrorMessage !== ''">
+                    {{connectToGroupErrorMessage}}
+                </div>
+
                 <span class="text">Уровень: {{$root.roomLevelFromUrl.name}}</span>
                 <br />
                 <br />
