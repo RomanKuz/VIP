@@ -25,10 +25,14 @@ module Interfaces {
 
         didMove(callBack:(moveRes: Models.MoveResult) => void): void;
 
+        missedMove(callBack:(moveRes: Models.MoveResult) => void): void;
+
         gameFinished(callBack:(group: Models.Game) => void): void;
 
         onDisconnectedFromHub(callBack: ()=> void): void;
 
         stopHubConnection(): void;
+
+        onTimerTick(callBack: (tick: number) => void): void;
     }
 }

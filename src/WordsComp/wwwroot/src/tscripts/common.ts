@@ -23,6 +23,8 @@ module Common {
         public doMove: string;
         public passMove: string;
         public onFailedToLoadGame: string;
+        public onTimerTick: string;
+        public onMissedMove: string;
 
         constructor() {
             this.appName = "gameApp"
@@ -37,6 +39,8 @@ module Common {
             this.doMove = "doMove";
             this.passMove = "passMove";
             this.onFailedToLoadGame = "failedToLoadGame";
+            this.onTimerTick = "timerTick";
+            this.onMissedMove = "missedMove";
         }
     }
     

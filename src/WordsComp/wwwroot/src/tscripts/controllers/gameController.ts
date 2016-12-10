@@ -8,26 +8,24 @@ module controllers {
         private stateHandler: Interfaces.IStateHandler;
         private words: Array<Models.Word>
         private userNum: number;
-        private $interval: ng.IIntervalService;
         private secondsForMove: number;
         private timerPromise: ng.IPromise<any>;
         private $timeout: ng.ITimeoutService;
-        private botForGame: Models.Bot;
-        private isGameWithBot: boolean;
+        private $log: ng.ILogService;
 
         private quates: Array<string>;
 
-        static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$interval", '$timeout'];
+        static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", '$timeout', '$log'];
         constructor(connectionHubService: Interfaces.IConnectToGame, $scope: Interfaces.IGameScope, 
                     stateHandler: Interfaces.IStateHandler,
-                    $interval: ng.IIntervalService,
-                    $timeout: ng.ITimeoutService) {
+                    $timeout: ng.ITimeoutService,
+                    $log: ng.ILogService) {
             this.connectionHubService = connectionHubService;
             this.$scope = $scope;
             this.stateHandler = stateHandler;
-            this.$interval = $interval;
             this.secondsForMove = 10;
             this.$timeout = $timeout;
+            this.$log = $log;
             this.quates = ["How many languages you know — that many times you are a person",
                            "If you talk to a man in a language he understands, that goes to his head. If you talk to him in his language, that goes to his heart",
                            "By words the mind is winged",
@@ -44,6 +42,7 @@ module controllers {
         private initializeViewModel():void {
             this.connectionHubService.gameStarted(data => this.startGame.call(this, data));
             this.connectionHubService.didMove(data => this.user2didMove.call(this, data));
+            this.connectionHubService.missedMove(data => this.missedMove.call(this, data));
             this.connectionHubService.onConnectedToGroup(() => this.unsetGameInfo.call(this))
             this.connectionHubService.onGroupFulled(data => this.handleGroupFulled.call(this, data));
             this.$scope.doMove = (variant: string) => this.doMove.call(this, variant);
@@ -52,6 +51,8 @@ module controllers {
             this.stateHandler.setUpGameScope(this.$scope);
             let randomQuateIndex = Math.floor(Math.random() * this.quates.length);
             this.$scope.randomQuate = this.quates[randomQuateIndex];
+
+            this.connectionHubService.onTimerTick((tick) => this.timerTick.call(this, tick))
         }
 
         private handleGroupFulled(group: Models.Group): void {
@@ -59,27 +60,16 @@ module controllers {
                 const isUser1 = group.usersList[0].userId === this.stateHandler.getUserId();
                 this.$scope.user2DisplayName = isUser1 ? group.usersList[1].displayName 
                                                     : group.usersList[0].displayName;
-                let user2 = isUser1 ? group.usersList[1] : group.usersList[0];
-                
-                if (user2.isBot) {
-                    this.botForGame = new Models.Bot();
-                    this.isGameWithBot = true;
-                } else {
-                    this.isGameWithBot = false;
-                }
             });
         }
 
         private onUserLeft(): void {
-            this.stopTimer();
             this.stateHandler.handleUser2LeftGroup();
             this.unsetGameInfo();
         }
 
         private unsetGameInfo(): void {
             this.gameInfo = null;
-            this.botForGame = null;
-            this.isGameWithBot = null;
 
             this.callInDigestLoop(() => {
                 this.$scope.currentWord = null;
@@ -109,7 +99,9 @@ module controllers {
                       this.setVarinatsOrder();
                       this.$scope.isCurrentUserMove = (isUser1 && this.gameInfo.currentMove === 1) 
                                                       || (!isUser1 && this.gameInfo.currentMove === 2);
-                      
+                      this.$scope.secondsForMoveLeft = 10;
+                      this.$scope.percentagesLeft = 100;
+                                                      
                       function shuffle(arr: Array<Models.Word>): Array<Models.Word> {
                             let array = arr.slice(0);
                             let m = array.length, t, i;
@@ -131,7 +123,6 @@ module controllers {
             });
 
             this.stateHandler.handleGameStarted();
-            this.startTimer();
         }
 
         private callInDigestLoop(action:() => void) {
@@ -144,67 +135,23 @@ module controllers {
             }
         }
 
-        private startTimer(): void {
-            if (this.timerPromise) {
-                throw "Previous timer should be stopped";
-            }
-
+        private timerTick(tick: number) {
             this.callInDigestLoop(() => {
-                this.$scope.secondsForMoveLeft = this.secondsForMove;
-                this.$scope.percentagesLeft = 100;
-            });
-
-            if (this.isGameWithBot) {
-                this.botForGame.handleTimerStarted(10);
-            }
-            
-            this.timerPromise = this.$interval(() => {
-                this.$scope.secondsForMoveLeft--;
+                this.$scope.secondsForMoveLeft = tick;
                 this.$scope.percentagesLeft = this.$scope.secondsForMoveLeft / 10 * 100;
-
-                if (!this.$scope.isCurrentUserMove
-                    && this.isGameWithBot) {
-                        let variant = this.botForGame.handleTimerTick(this.$scope.secondsForMoveLeft,
-                                                                      this.$scope.currentWord.translateVariants);
-                        this.handleBotMove(variant);
-                } else if (this.$scope.secondsForMoveLeft === 0
-                    && this.$scope.isCurrentUserMove) {
-                    this.passMove();
-                }
-            }, 1000, 10);
-        }
-
-        private stopTimer(): void {
-            if (!this.timerPromise) {
-                return;
-            }
-
-            this.$interval.cancel(this.timerPromise);
-            this.timerPromise = null;
-        }
-
-        private handleBotMove(variant: string): void {
-            if (variant === null) {
-                return;
-            }
-
-            this.connectionHubService.doMove(this.userNum === 1 ? 2 : 1, this.$scope.currentWord.word, variant)
-                                     .fail(error => console.log("failed bot move. " + error));
+            });
         }
 
         private user2didMove(moveRes: Models.MoveResult): void {
-            this.$scope.$apply(() => {
+            this.callInDigestLoop(() => {
                 this.handleMove(moveRes, false);
             });
         }
 
-        private passMove(): void {
-            this.connectionHubService.passMove(this.userNum)
-                                     .done((moveResult:Models.MoveResult) => {
-                                         this.$scope.$apply(() => {
-                                             this.handleMove(moveResult, true);
-                                         });
-                                     });
+        private missedMove(moveRes: Models.MoveResult): void {
+            this.callInDigestLoop(() => {
+                this.handleMove(moveRes, this.$scope.isCurrentUserMove);
+            }
         }
 
         private doMove(variant: string): void {
@@ -214,7 +161,6 @@ module controllers {
                         return;
             }
 
-            this.stopTimer();
             if (this.$scope.secondsForMoveLeft === 0) {
                 // should be handled by timer callback
                 return;
@@ -236,8 +182,6 @@ module controllers {
         }
 
         private handleMove(moveRes: Models.MoveResult, isCurrentUserMove) {
-            this.stopTimer();
-
             // if it is skipped, then set timer manually to 0
             // because timer on both side may show different time by that time
             // e.g. one could have 0 and other player could have 1
@@ -252,7 +196,8 @@ module controllers {
             let score = isCurrentUserMove ? currentUserScore : user2Score;
 
             if (!moveRes.isCorrect) {
-                console.error(moveRes.errorMessage);
+                this.$log.error(moveRes.errorMessage);
+                return;
             } else if (moveRes.isSuccessful) {
                 score.successfulMoves++;
             } else {
@@ -307,8 +252,6 @@ module controllers {
                                                          this.$scope.currentUserScore.successfulMoves == this.$scope.user2Score.successfulMoves);
                     this.unsetGameInfo();
                     this.connectionHubService.stopHubConnection();
-                } else {
-                    this.startTimer();
                 }
             }, 1000, true); // delay to let user see the result of move
         }

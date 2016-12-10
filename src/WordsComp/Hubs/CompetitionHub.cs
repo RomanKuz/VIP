@@ -44,20 +44,6 @@ namespace WordsComp.Hubs
             }
         }
 
-        public MoveResultModel PassMove(Move move)
-        {
-            var group = collector.GetUserGroup(Context.ConnectionId);
-            if (group != null)
-            {
-                var res = group.GameProvider.PassMove(move);
-                return Mapper.Map<MoveResultModel>(res);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
         public void Quit()
         {
             collector.RemoveUser(Context.ConnectionId);

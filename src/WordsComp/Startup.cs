@@ -20,6 +20,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using SimpleInjector;
+using SimpleInjector.Diagnostics;
 using SimpleInjector.Integration.AspNetCore;
 using WordsComp.Concrete;
 using WordsComp.Interfaces;
@@ -148,6 +149,9 @@ namespace WordsComp
             container.Register<IGameProvider, GameProvider>();
 
             DependencyResolverHelper.RegisterDependencies(container);
+            var registration = container.GetRegistration(typeof(IGameProvider)).Registration;
+            registration.SuppressDiagnosticWarning(DiagnosticType.DisposableTransientComponent,
+                "UserGroupsCollector is responsible for disposing the object");
         }
 
         private void StartInteractionWithUser()

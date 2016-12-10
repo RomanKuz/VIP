@@ -10,6 +10,8 @@ namespace BLogic.Models
         private GameStatus gameStatus;
         private int currentWordIndex;
 
+        private object locker = new object();
+
         public Game(UserInfo user1, UserInfo user2, string groupId)
         {
             User1 = user1;
@@ -70,122 +72,114 @@ namespace BLogic.Models
 
         public MoveResult DoMove(Move userMove, string word, string variant)
         {
-            var userId = CurrentMove == Move.FirstUserMove ? User2.UserId : User1.UserId;
-            var userScore = CurrentMove == Move.FirstUserMove ? User1CurrentScore : User2CurrentScore;
-
-            if (userMove != CurrentMove)
+            lock (locker)
             {
-                return new MoveResult
+                var userId = CurrentMove == Move.FirstUserMove ? User2.UserId : User1.UserId;
+                var userScore = CurrentMove == Move.FirstUserMove ? User1CurrentScore : User2CurrentScore;
+
+                if (userMove != CurrentMove)
                 {
-                    IsSuccessful = false,
-                    IsCorrect = false,
-                    ErrorMessage = "It is another user turn",
-                    NextMoveUserId = userId,
-                    IsLastMove = false,
-                    SelectedVariantIndex = -1
-                };
-            }
-            ChangeMoveTurn();
+                    return new MoveResult
+                    {
+                        IsSuccessful = false,
+                        IsCorrect = false,
+                        ErrorMessage = "It is another user turn",
+                        NextMoveUserId = userId,
+                        IsLastMove = false,
+                        SelectedVariantIndex = -1
+                    };
+                }
 
-
-            if (currentWordIndex >= Words.Count)
-            {
-                return new MoveResult
+                ChangeMoveTurn();
+                if (currentWordIndex >= Words.Count)
                 {
-                    IsSuccessful = false,
-                    IsCorrect = false,
-                    ErrorMessage = "No words any more. Smth bad happened. Game should be finished",
-                    NextMoveUserId = userId,
-                    IsLastMove = false,
-                    SelectedVariantIndex = -1
-                };
-            }
+                    return new MoveResult
+                    {
+                        IsSuccessful = false,
+                        IsCorrect = false,
+                        ErrorMessage = "No words any more. Smth bad happened. Game should be finished",
+                        NextMoveUserId = userId,
+                        IsLastMove = false,
+                        SelectedVariantIndex = -1
+                    };
+                }
 
-            var wordInfo = Words[currentWordIndex];
-            currentWordIndex++;
-            
-            var variantInfo = wordInfo.TranslateVariants.FirstOrDefault(v => v.VariantDef == variant);
-            if (variantInfo == null)
-            {
-                return new MoveResult
+                var wordInfo = Words[currentWordIndex];
+                currentWordIndex++;
+
+                var variantInfo = wordInfo.TranslateVariants.FirstOrDefault(v => v.VariantDef == variant);
+                if (variantInfo == null)
                 {
-                    IsSuccessful = false,
-                    IsCorrect = false,
-                    ErrorMessage = $"No such variant for word {word}",
+                    return new MoveResult
+                    {
+                        IsSuccessful = false,
+                        IsCorrect = false,
+                        ErrorMessage = $"No such variant for word {word}",
+                        NextMoveUserId = userId,
+                        SelectedVariantIndex = -1
+                    };
+                }
+
+                int varIndex = wordInfo.TranslateVariants.IndexOf(variantInfo);
+                var res = new MoveResult
+                {
+                    IsCorrect = true,
+                    ErrorMessage = string.Empty,
                     NextMoveUserId = userId,
-                    SelectedVariantIndex = -1
+                    SelectedVariantIndex = varIndex
                 };
-            }
 
-            int varIndex = wordInfo.TranslateVariants.IndexOf(variantInfo);
-            var res = new MoveResult
-            {
-                IsCorrect = true,
-                ErrorMessage = string.Empty,
-                NextMoveUserId = userId,
-                SelectedVariantIndex = varIndex
-            };
+                if (variantInfo.IsCorrect)
+                {
+                    userScore.SuccessfulMoves++;
+                    res.IsSuccessful = true;
+                }
+                else
+                {
+                    userScore.WrongMoves++;
+                    res.IsSuccessful = false;
+                }
 
-            if (variantInfo.IsCorrect)
-            {
-                userScore.SuccessfulMoves++;
-                res.IsSuccessful = true;
-            }
-            else
-            {
-                userScore.WrongMoves++;
-                res.IsSuccessful = false;
-            }
+                GameResult gameRes;
+                if (IsFinished(out gameRes))
+                {
+                    res.IsLastMove = true;
+                    res.GameResult = gameRes;
+                }
 
-            GameResult gameRes;
-            if (IsFinished(out gameRes))
-            {
-                res.IsLastMove = true;
-                res.GameResult = gameRes;
+                return res;
             }
-
-            return res;
         }
 
-        public MoveResult PassMove(Move userMove)
+        public MoveResult PassMove()
         {
-            currentWordIndex++;
-            var userScore = CurrentMove == Move.FirstUserMove ? User1CurrentScore : User2CurrentScore;
-            var userId = CurrentMove == Move.FirstUserMove ? User2.UserId : User1.UserId;
-            userScore.WrongMoves++;
-
-            if (userMove != CurrentMove)
+            lock (locker)
             {
-                return new MoveResult
+                currentWordIndex++;
+                var userScore = CurrentMove == Move.FirstUserMove ? User1CurrentScore : User2CurrentScore;
+                var userId = CurrentMove == Move.FirstUserMove ? User2.UserId : User1.UserId;
+                userScore.WrongMoves++;
+
+                ChangeMoveTurn();
+                var res = new MoveResult
                 {
-                    IsSuccessful = false,
-                    IsCorrect = false,
-                    ErrorMessage = "It is another user turn",
+                    IsCorrect = true,
+                    ErrorMessage = string.Empty,
                     NextMoveUserId = userId,
-                    IsLastMove = false,
-                    SelectedVariantIndex = -1
+                    IsSuccessful = false,
+                    SelectedVariantIndex = -1,
+                    IsSkipped = true
                 };
+
+                GameResult gameRes;
+                if (IsFinished(out gameRes))
+                {
+                    res.IsLastMove = true;
+                    res.GameResult = gameRes;
+                }
+
+                return res;
             }
-
-            ChangeMoveTurn();
-            var res = new MoveResult
-            {
-                IsCorrect = true,
-                ErrorMessage = string.Empty,
-                NextMoveUserId = userId,
-                IsSuccessful = false,
-                SelectedVariantIndex = -1,
-                IsSkipped = true
-            };
-
-            GameResult gameRes;
-            if (IsFinished(out gameRes))
-            {
-                res.IsLastMove = true;
-                res.GameResult = gameRes;
-            }
-
-            return res;
         }
 
         public bool IsFinished(out GameResult res)
@@ -235,6 +229,11 @@ namespace BLogic.Models
                 };
                 return true;
             }
+        }
+
+        public WordBL GetCurrentWord()
+        {
+            return Words[currentWordIndex];
         }
     }
 }

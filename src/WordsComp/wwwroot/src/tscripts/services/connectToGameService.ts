@@ -74,6 +74,10 @@ module Services {
             this.hub.on(this.constants.didMove, (msg) => callBack(msg));
         }
 
+        public missedMove(callBack:(moveRes: Models.MoveResult) => void): void {
+            this.hub.on(this.constants.onMissedMove, (msg) => callBack(msg));
+        }
+
         public gameFinished(callBack:(group: Models.Game) => void): void {
             this.hub.on(this.constants.gameFinished, (msg) => callBack(msg[0]));
         }
@@ -90,6 +94,10 @@ module Services {
 
         public onFailedToLoadGame(callBack:() => void): void {
             this.hub.on(this.constants.onFailedToLoadGame, () => callBack());
+        }
+
+        public onTimerTick(callBack: (tick: number) => void): void {
+            this.hub.on(this.constants.onTimerTick, value => callBack(parseInt(value)));
         }
     }
 

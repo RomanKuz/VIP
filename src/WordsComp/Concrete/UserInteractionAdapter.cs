@@ -120,6 +120,25 @@ namespace WordsComp.Concrete
                 {
                     // TODO: Persist to database
                 });
+
+            gameProvider.TimerTick.Subscribe(tick =>
+            {
+                var hubGroup = hubContext.Clients.Group(gameProvider.AssociatedGroupId);
+                if (hubGroup != null)
+                {
+                    hubGroup.timerTick(tick);
+                }
+            });
+
+            gameProvider.MissedMove
+                .Subscribe(moveRes =>
+                {
+                    var hubGroup = hubContext.Clients.Group(gameProvider.AssociatedGroupId);
+                    if (hubGroup != null)
+                    {
+                        hubGroup.missedMove(Mapper.Map<MoveResultModel>(moveRes));
+                    }
+                });
         }
 
         private IHubContext GetHubContext()

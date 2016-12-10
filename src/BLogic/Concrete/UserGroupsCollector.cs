@@ -190,7 +190,8 @@ namespace BLogic.Concrete
 
                     try
                     {
-                        await gameProvider.StartGame(users[0], users[1], existingGroup.GetGroupId(), users[0].GameLevel);
+                        await gameProvider.StartGame(users[0], users[1], existingGroup.GetGroupId(), users[0].GameLevel, newUser.IsBot);
+                        gameProvider.GameFinishes.Subscribe(_ => gameProvider.Dispose());
                         existingGroup.GameProvider = gameProvider;
                         gameStarted.OnNext(gameProvider);
                     }
@@ -281,6 +282,7 @@ namespace BLogic.Concrete
                         friendsRoomsDictionary.TryRemove(existingGroup.FriendToConnectGroupId, out existingFriendsRoom);
                     }
                     userLeftGroupObservable.OnNext(existingGroup);
+                    existingGroup?.GameProvider?.Dispose();
                 }
             }
 

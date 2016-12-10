@@ -4,18 +4,22 @@ using BLogic.Models;
 
 namespace BLogic.Interfaces
 {
-    public interface IGameProvider
+    public interface IGameProvider: IDisposable
     {
-        Task<Game> StartGame(UserInfo user1, UserInfo user2, string groupId, WordLevel wordLevel);
+        string AssociatedGroupId { get; }
+
+        Task<Game> StartGame(UserInfo user1, UserInfo user2, string groupId, WordLevel wordLevel, bool isGameWithBot);
 
         MoveResult DoMove(Move userMove, string word, string variant);
-
-        MoveResult PassMove(Move userMove);
 
         Game GetGame();
 
         IObservable<Tuple<MoveResult, Move>> DidMove { get; }
 
         IObservable<GameResult> GameFinishes { get; }
+
+        IObservable<long> TimerTick { get; }
+
+        IObservable<MoveResult> MissedMove { get; }
     }
 }
