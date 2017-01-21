@@ -7,3 +7,4 @@
 /// <reference path="./interfaces/iGameFinishedModalWindowScope.ts" />
 /// <reference path="./models/models.ts" />
 /// <reference path="./interfaces/iCookieService.ts" />
+/// <reference path="./interfaces/iUserInfo.ts" />

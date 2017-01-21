@@ -81,6 +81,7 @@ module controllers {
                 this.$scope.passedWords = [];
                 this.$scope.leftWords = [];
                 this.$scope.user2DisplayName = null;
+                this.$scope.user2Info = null;
             });
         }
 
@@ -120,6 +121,7 @@ module controllers {
                             return array;
                       }
                       this.$scope.leftWords = shuffle(this.words.slice(1));
+                      this.$scope.user2Info = isUser1 ? game.user1.authInfo : game.user2.authInfo;
             });
 
             this.stateHandler.handleGameStarted();
@@ -151,7 +153,7 @@ module controllers {
         private missedMove(moveRes: Models.MoveResult): void {
             this.callInDigestLoop(() => {
                 this.handleMove(moveRes, this.$scope.isCurrentUserMove);
-            }
+            });
         }
 
         private doMove(variant: string): void {

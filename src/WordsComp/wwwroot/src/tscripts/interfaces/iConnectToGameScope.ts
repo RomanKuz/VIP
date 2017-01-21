@@ -4,6 +4,8 @@ module Interfaces {
         connectToGroup: () => void;
         createAndConnectToCustomRoom: () => void;
         connectToExistingRoom: (roomId?: string) => void;
+        authenticate : (provider: string) => void;
+        logOut : () => void;
 
         levels: Array<Models.ILevelNamePair>;
         changeLevel: (level: Models.ILevelNamePair) => void;

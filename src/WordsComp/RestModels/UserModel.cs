@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Common.Models;
+using Newtonsoft.Json;
 
 namespace WordsComp.RestModels
 {
@@ -13,5 +14,11 @@ namespace WordsComp.RestModels
 
         [JsonProperty("isBot")]
         public bool IsBot { get; set; }
+
+        [JsonProperty("isLoggedIn")]
+        public bool IsLoggedIn { get; set; }
+
+        [JsonProperty("authInfo")]
+        public LoginUserInfo LoginInfo { get; set; }
     }
 }

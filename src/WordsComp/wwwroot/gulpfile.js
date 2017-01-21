@@ -37,7 +37,8 @@ var dependenciesTsScripts = [`${dependenciesTsSrc}/angular/angular.js`,
     `${dependenciesTsSrc}/rx-angular/dist/rx.angular.js`,
     `${dependenciesTsSrc}/spin.js/spin.js`,
     `${dependenciesTsSrc}/angular-spinner/angular-spinner.js`,
-    `${dependenciesTsSrc}/clipboard/dist/clipboard.js`
+    `${dependenciesTsSrc}/clipboard/dist/clipboard.js`,
+    `${dependenciesTsSrc}/jwt-decode/build/jwt-decode.js`
 ];
 
 var shouldBeMinified = false;
@@ -59,7 +60,10 @@ function customiseEnv(env) {
 
 var lessDependencies = `${dependenciesTsSrc}/bootstrap-less/bootstrap/bootstrap.less`;
 var customLess = path.join(__dirname, './src/customLess/common.less');
-var cssDependencies = `${dependenciesTsSrc}/angular-busy/angular-busy.css`;
+var cssDependencies = [`${dependenciesTsSrc}/angular-busy/angular-busy.css`,
+    `${dependenciesTsSrc}/font-awesome/css/font-awesome.css`
+];
+var fontDependencies = `${dependenciesTsSrc}/font-awesome/fonts/*.*`;
 var indexHtmlSrc = path.join(__dirname, './src/index.html');
 
 gulp.task('customTs', function() {
@@ -110,6 +114,7 @@ gulp.task('customLess', function() {
 
 gulp.task('cssDependencies', function() {
     gulp.src(cssDependencies)
+        .pipe(concat('external.css'))
         .pipe(gulp.dest(dest));
 });
 
@@ -120,8 +125,14 @@ gulp.task('_internalBuild', function() {
             'dependenciesLess',
             'cssDependencies',
             'customLess',
-            'buildIndexHtml'
+            'buildIndexHtml',
+            'copyFonts'
         ]);
+});
+
+gulp.task('copyFonts', function() {
+    gulp.src(fontDependencies)
+        .pipe(gulp.dest(dest + "/fonts"));
 })
 
 gulp.task('build', function() {

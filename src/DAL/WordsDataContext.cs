@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Reflection;
+using Common.Models;
 using MongoDB.Driver;
 
 namespace DAL
@@ -9,16 +9,9 @@ namespace DAL
         private static IMongoDatabase db;
         private static MongoClient client;
 
-        public static void SetUpMongoClient(MongoClientSettings settings = null)
+        public static void SetUpMongoClient(string connectionString)
         {
-            if (settings == null)
-            {
-                client = new MongoClient();
-            }
-            else
-            {
-                client = new MongoClient(settings);
-            }
+            client = string.IsNullOrEmpty(connectionString) ? new MongoClient() : new MongoClient(connectionString);
             db = client.GetDatabase("WordsStorage");
         }
 
@@ -37,17 +30,17 @@ namespace DAL
             return db.GetCollection<WordDTO>("words.beginner");
         }
 
-        public IMongoCollection<WordDTO> GetWordsCollection(int collectionType)
+        public IMongoCollection<WordDTO> GetWordsCollection(WordLevel collectionType)
         {
             switch (collectionType)
             {
-                case 1:
+                case WordLevel.Beginer:
                     return GetWordsBeginnerCollection();
 
-                case 2:
+                case WordLevel.Intermediate:
                     return GetWordsIntermediateCollection();
 
-                case 3:
+                case WordLevel.Advanced:
                     return GetWordsAdvancedCollection();
 
                 default:

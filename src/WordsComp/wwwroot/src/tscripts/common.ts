@@ -12,7 +12,8 @@
 module Common {
     export class Constants {
         public appName: string;
-        public hubConnectToGroupMethodName: string;
+        public hubConnectToGroupAsAuthUserMethodName: string;
+        public hubConnectToGroupAsAnonUserMethodName: string;
         public connectedToGroup: string;
         public leftGroup: string;
         public groupFulled: string;
@@ -28,7 +29,8 @@ module Common {
 
         constructor() {
             this.appName = "gameApp"
-            this.hubConnectToGroupMethodName = "connect";
+            this.hubConnectToGroupAsAuthUserMethodName = "connectAsAuthUser";
+            this.hubConnectToGroupAsAnonUserMethodName = "connectAnon";
             this.connectedToGroup = "userAdded";
             this.leftGroup = "userLeft";
             this.groupFulled = "groupFulled";

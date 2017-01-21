@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using BLogic.Interfaces;
 using BLogic.Models;
+using Common.Models;
 using DAL;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -27,7 +28,7 @@ namespace BLogic.Concrete
                 throw new ArgumentException(nameof(wordLevel));
             }
 
-            var dtoList = await dataContext.GetWordsCollection((int)wordLevel)
+            var dtoList = await dataContext.GetWordsCollection(wordLevel)
                 .Aggregate()
                 .AppendStage<WordDTO>(string.Format("{{ $sample: {{ size: {0} }} }}", count))
                 .ToListAsync();

@@ -1,14 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using AutoMapper;
 using BLogic;
 using BLogic.Concrete;
 using BLogic.Concrete.WordsComp.Concrete;
 using BLogic.Interfaces;
 using BLogic.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -18,12 +22,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
-using MongoDB.Driver;
 using SimpleInjector;
 using SimpleInjector.Diagnostics;
 using SimpleInjector.Integration.AspNetCore;
 using WordsComp.Concrete;
+using WordsComp.Concrete.Auth;
 using WordsComp.Interfaces;
+using WordsComp.Options;
 using WordsComp.RestModels;
 using IApplicationBuilder = Microsoft.AspNetCore.Builder.IApplicationBuilder;
 
@@ -50,12 +55,19 @@ namespace WordsComp
         }
 
         private readonly Container container = new Container();
+
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+
+            if (env.IsDevelopment())
+            {
+                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
+                builder.AddUserSecrets();
+            }
 
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
@@ -66,12 +78,17 @@ namespace WordsComp
         // This method gets called by the runtime. Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAuthentication(options => options.SignInScheme = AuthConstants.SIGN_IN_SCHEME);
+            services.AddAuthorization();
+
             services.AddSignalR(options =>
             {
                 options.Hubs.EnableDetailedErrors = true;
                 options.Hubs.EnableJavaScriptProxies = true;
             });
-
+            services.Configure<FacebookAuthOptions>(Configuration.GetSection("facebook"))
+                    .Configure<GoogleAuthOptions>(Configuration.GetSection("google"));
+            services.AddMvc();
             services.AddSingleton<IHubActivator>(
                 new SimpleInjectorHubActivator(container));
         }
@@ -91,6 +108,8 @@ namespace WordsComp
             var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(),
                 env.EnvironmentName == "Development" ? @"wwwroot\dev" : @"wwwroot\dist"));
 
+            ConfigureAuth(app);
+
             app.UseWebSockets()
                .UseSignalR()
                .UseDefaultFiles(new DefaultFilesOptions()
@@ -100,13 +119,31 @@ namespace WordsComp
                .UseStaticFiles()
                .UseSimpleInjectorAspNetRequestScoping(container);
 
+
+            // Will not work correctly for dev environment, 
+            // because dev environment uses different port for ssl
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.IsHttps)
+                {
+                    await next();
+                }
+                else
+                {
+                    var httpsUrl = $"https://{context.Request.Host}{context.Request.Path}";
+                    context.Response.Redirect(httpsUrl);
+                }
+            });
+
             app.MapWhen(context =>
             {
                 var path = context.Request.Path.Value;
                 return path.EndsWith(".html")
                        || path.EndsWith(".js")
                        || path.EndsWith(".css")
-                       || path.EndsWith(".ico");
+                       || path.EndsWith(".ico")
+                       || path.EndsWith(".woff")
+                       || path.EndsWith(".woff2"); // fonts
             }, config => config.UseStaticFiles(new StaticFileOptions()
             {
                 FileProvider = fileProvider
@@ -128,9 +165,30 @@ namespace WordsComp
                     });
                 });
 
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
+            app.UseMvc();
             InitializeMapper();
-            SetUpDbConnection(env.EnvironmentName);
+            SetUpDbConnection();
             StartInteractionWithUser();
+        }
+
+        private void ConfigureAuth(IApplicationBuilder app)
+        {
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = false,
+                AuthenticationScheme = AuthConstants.SIGN_IN_SCHEME,
+                ExpireTimeSpan = TimeSpan.FromDays(30 * 4),
+                SlidingExpiration = true,
+                CookieHttpOnly = false,
+                CookieName = "UserClaims",
+                TicketDataFormat = new JWTDataFormat()
+            });
         }
 
         private void InitializeContainer(IApplicationBuilder app)
@@ -147,6 +205,7 @@ namespace WordsComp
             container.RegisterSingleton(app.ApplicationServices.GetService<IConnectionManager>);
             container.Register<IWordStorageAdapter, WordStorageAdapter>();
             container.Register<IGameProvider, GameProvider>();
+            container.RegisterSingleton<IHttpContextAccessor>(new HttpContextAccessor());
 
             DependencyResolverHelper.RegisterDependencies(container);
             var registration = container.GetRegistration(typeof(IGameProvider)).Registration;
@@ -182,20 +241,10 @@ namespace WordsComp
             });
         }
 
-        private void SetUpDbConnection(string env)
+        private void SetUpDbConnection()
         {
-            if (env == "Development")
-            {
-                MongoDbInitializerHelper.SetUpMongoClient();
-            }
-            else
-            {
-
-                MongoDbInitializerHelper.SetUpMongoClient(new MongoClientSettings
-                {
-                    Server = new MongoServerAddress("db-server5268.cloudapp.net", 27017),
-                });
-            }
+            MongoDbInitializerHelper.SetUpMongoClient(Configuration["connectionStrings:gameInfoDbConnectionString"]);
         }
     }
 }
+

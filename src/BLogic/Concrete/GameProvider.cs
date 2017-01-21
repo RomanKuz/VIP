@@ -4,6 +4,7 @@ using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using BLogic.Interfaces;
 using BLogic.Models;
+using Common.Models;
 
 namespace BLogic.Concrete
 {

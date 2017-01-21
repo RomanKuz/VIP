@@ -1,9 +1,10 @@
-﻿using MongoDB.Driver;
+﻿using Common.Models;
+using MongoDB.Driver;
 
 namespace DAL
 {
     public interface IWordsDataContext
     {
-        IMongoCollection<WordDTO> GetWordsCollection(int collectionType);
+        IMongoCollection<WordDTO> GetWordsCollection(WordLevel collectionType);
     }
 }

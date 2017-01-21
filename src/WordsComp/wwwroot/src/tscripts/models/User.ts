@@ -3,5 +3,6 @@ module Models {
         public userId: string;
         public displayName: string;
         public isBot: boolean;
+        public authInfo: Interfaces.IUserInfo;
     }
 }

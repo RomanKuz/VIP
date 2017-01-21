@@ -1,4 +1,4 @@
-﻿namespace BLogic.Models
+﻿namespace Common.Models
 {
     public enum WordLevel
     {

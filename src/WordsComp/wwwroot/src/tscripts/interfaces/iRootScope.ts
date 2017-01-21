@@ -15,5 +15,8 @@ module Interfaces {
         gameMode: GameMode;
         urlForRoom: string;
         roomLevelFromUrl: Models.ILevelNamePair;
+
+        isLoggedIn: boolean;
+        currentUserInfo: Interfaces.IUserInfo;
     }
 }

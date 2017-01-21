@@ -23,5 +23,7 @@ module Interfaces {
         percentagesLeft: number;
 
         randomQuate: string;
+
+        user2Info: Interfaces.IUserInfo;
     }
 }

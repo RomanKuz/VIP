@@ -1,6 +1,8 @@
 /// <reference path="../common.ts" />
 /// <reference path="../interfaces.ts" />
 module controllers {
+    declare function jwt_decode(token: string) : any;
+
     export class ConnectToGameController {
         private connectionHubService: Interfaces.IConnectToGame;
         private $scope: Interfaces.IConnectToGameScope;
@@ -16,14 +18,18 @@ module controllers {
         private roomIdFromUrl: string;
         private roomLevelFromUrl: Models.Level;
         private createdRoomId: string;
+        private $auth: any;
+        private $http: ng.IHttpService;
 
-        static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$rootScope", "Services.CookieService", "$log"];
+        static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$rootScope", "Services.CookieService", "$log", "$auth", "$http"];
         constructor(connectionHubService: Interfaces.IConnectToGame, 
                     $scope: Interfaces.IConnectToGameScope, 
                     stateHandler: Interfaces.IStateHandler,
                     $rootScope: Interfaces.IRootScope,
                     coockieService: Interfaces.ICookieService,
-                    $log: ng.ILogService) {
+                    $log: ng.ILogService,
+                    $auth: any,
+                    $http: ng.IHttpService) {
             this.connectionHubService = connectionHubService;
             this.$scope = $scope;
             this.stateHandler = stateHandler;
@@ -33,12 +39,14 @@ module controllers {
             this.levelCookieKey = "levelName";
             this.guidRegex = new RegExp("^roomId=[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?&level=[1-3]$", "i"); // ignore case
             this.$log = $log;
+            this.$auth = $auth;
+            this.$http = $http;
             this.initializeViewModel();
         }
 
         private initializeViewModel():void {
+            this.initializeUserInfoFromCookies();
             this.stateHandler.setConnectToGameScope(this.$scope);
-
             this.connectionHubService.onUserLeft(data => this.onUserLeft.call(this, data));
             this.connectionHubService.onGroupFulled(data => this.onGroupFulled.call(this, data));
             this.connectionHubService.onConnectedToGroup(data => this.onConnectedToGroup.call(this, data));
@@ -52,7 +60,19 @@ module controllers {
                     this.connectToGroup.call(this, true, roomId || this.roomIdFromUrl || this.createdRoomId,
                                              this.roomLevelFromUrl);
                 }
-
+            let cookieService = this.coockieService;
+            this.$scope.authenticate = (provider:string) => {
+                this.$auth.authenticate(provider).then(() => {
+                    this.initializeUserInfoFromCookies();
+                });
+            };
+            
+            this.$scope.logOut = () => {
+                this.$http.post('/auth/logout', null).then(() => {
+                    this.$rootScope.isLoggedIn = false;
+                    this.$rootScope.currentUserInfo = null;
+                }, (error) => this.$log.error(error));
+            };
             this.connectionHubService.onConnectToHub(value => {
                 this.stateHandler.setUserId(value);
             });
@@ -65,7 +85,8 @@ module controllers {
                                  ];
             this.$scope.changeLevel = (level: Models.ILevelNamePair) => this.$rootScope.level = level;
 
-            let displayNameFromCookies = "Случайный игрок";
+            const defaultDisplayName = "Случайный игрок";
+            let displayNameFromCookies = defaultDisplayName;
             let levelFromCookies = 2; // Intermediate by default
             try {
                 let cookieValue = this.coockieService.getCookie(this.displayNameCookieKey);
@@ -76,6 +97,12 @@ module controllers {
                 cookieValue = this.coockieService.getCookie(this.levelCookieKey);
                 if (cookieValue !== "") {
                     levelFromCookies = parseInt(cookieValue) || levelFromCookies;
+                }
+
+                if (displayNameFromCookies === defaultDisplayName
+                    && this.$rootScope.isLoggedIn 
+                    && this.$rootScope.currentUserInfo.shortExternalProfileName) {
+                        displayNameFromCookies = this.$rootScope.currentUserInfo.shortExternalProfileName;
                 }
             }
             catch (error) {
@@ -111,6 +138,25 @@ module controllers {
                            .select(change => change.newValue as Interfaces.GameMode)
                            .where(gameMode => gameMode === Interfaces.GameMode.onlineWithEverybody)
                            .subscribe(_ => this.$rootScope.urlForRoom = "");
+        }
+
+        private initializeUserInfoFromCookies() {
+            let jwt = this.coockieService.getCookie('UserClaims');
+            if (jwt) {
+                try {
+                    let decodedToken = jwt_decode(jwt) as Interfaces.IUserInfo;
+                    if (decodedToken) {
+                        this.$rootScope.isLoggedIn = true;
+                        this.$rootScope.currentUserInfo = decodedToken;
+                    } else {
+                        this.$rootScope.isLoggedIn = false;
+                    }
+                } catch(error) {
+                    this.$log.error('error when decoding jwt: ' + error);
+                }
+            } else {
+                this.$rootScope.isLoggedIn = false;
+            }
         }
 
         private getParameterFromUrl(name: string): string {
@@ -154,7 +200,8 @@ module controllers {
             let promise = this.connectionHubService.connectToNewGroup(displayName,
                                                                       level,
                                                                       isGameWithFriend || false,
-                                                                      groupId)
+                                                                      groupId,
+                                                                      this.$rootScope.isLoggedIn)
                                                    .done(() => {
                                                        if (isGameWithFriend 
                                                            && !groupId) {

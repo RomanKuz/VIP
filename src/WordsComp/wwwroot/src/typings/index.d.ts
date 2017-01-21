@@ -9,3 +9,4 @@
 /// <reference path="globals/rx.angular/index.d.ts" />
 /// <reference path="globals/rx/index.d.ts" />
 /// <reference path="globals/signalr/index.d.ts" />
+/// <reference path="modules/jwt-decode/index.d.ts" />

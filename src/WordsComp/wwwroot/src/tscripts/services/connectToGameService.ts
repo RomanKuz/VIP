@@ -29,19 +29,18 @@ module Services {
             return this.hub.invoke(this.constants.passMove, moveOrder);
         }
 
-        private connectToNewGroupImpl(displayName: string, level: Models.Level) {
-            return this.hub.invoke(this.constants.hubConnectToGroupMethodName, displayName, level);
-        }
-
         public connectToNewGroup(displayName: string, 
                                  level: Models.Level, 
                                  isGameWithFriend:boolean,
-                                 groupId: string): JQueryPromise<any> {
+                                 groupId: string,
+                                 isAuth: boolean): JQueryPromise<any> {
+            let methodName = isAuth ? this.constants.hubConnectToGroupAsAuthUserMethodName
+                                    : this.constants.hubConnectToGroupAsAnonUserMethodName;
             if (this.connection.state === 4) {
                 return this.connectToHub()
                         .then(values => {
                             this.onConnectedToHubCallback(values.id);
-                            return this.hub.invoke(this.constants.hubConnectToGroupMethodName, 
+                            return this.hub.invoke(methodName, 
                                                    displayName, 
                                                    level, 
                                                    isGameWithFriend,
@@ -49,7 +48,7 @@ module Services {
                         });
             }
 
-            return this.hub.invoke(this.constants.hubConnectToGroupMethodName, displayName, level, isGameWithFriend, groupId || "");
+            return this.hub.invoke(methodName, displayName, level, isGameWithFriend, groupId || "");
         }
 
         public onConnectedToGroup(callBack:(userId: string) => void): void {

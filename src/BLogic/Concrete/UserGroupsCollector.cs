@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BLogic.Interfaces;
 using BLogic.Models;
+using Common.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BLogic.Concrete
@@ -17,19 +18,19 @@ namespace BLogic.Concrete
         {
             private static readonly string[] russionMostPopularNames = new[]
             {
-                "Анастасия",
+                "Настя",
                 "Мария",
                 "Дарья",
                 "Анна",
                 "Елизавета",
                 "Полина",
-                "Виктория",
-                "Екатерина",
+                "Вика",
+                "Катя",
                 "Саша",
                 "Максим",
                 "Иван",
                 "Артем",
-                "Дмитрий",
+                "Дима",
                 "Никита",
                 "Михаил",
                 "Даниил",
@@ -191,7 +192,6 @@ namespace BLogic.Concrete
                     try
                     {
                         await gameProvider.StartGame(users[0], users[1], existingGroup.GetGroupId(), users[0].GameLevel, newUser.IsBot);
-                        gameProvider.GameFinishes.Subscribe(_ => gameProvider.Dispose());
                         existingGroup.GameProvider = gameProvider;
                         gameStarted.OnNext(gameProvider);
                     }
@@ -245,7 +245,8 @@ namespace BLogic.Concrete
                                 await AddUserToQueue(new UserInfo(Guid.NewGuid().ToString(),
                                     GetRandomBotName(),
                                     level,
-                                    true));
+                                    true,
+                                    false));
                                 return Unit.Default;
                             })
                             .Subscribe();

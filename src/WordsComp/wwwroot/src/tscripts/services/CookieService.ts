@@ -2,6 +2,7 @@
 module Services {
     export class CookieService implements Interfaces.ICookieService {
         setCookie(cname: string, cvalue: any, exdays?: number): void {
+            cvalue = encodeURIComponent(cvalue);
             if (!exdays) {
                 exdays = 10 * 367; // 10 years cookies
             }
@@ -21,7 +22,7 @@ module Services {
                     c = c.substring(1);
                 }
                 if (c.indexOf(name) == 0) {
-                    return c.substring(name.length, c.length);
+                    return decodeURIComponent(c.substring(name.length, c.length));
                 }
             }
             return "";

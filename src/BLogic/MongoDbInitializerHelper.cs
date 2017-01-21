@@ -5,9 +5,9 @@ namespace BLogic
 {
     public class MongoDbInitializerHelper
     {
-        public static void SetUpMongoClient(MongoClientSettings settings = null)
+        public static void SetUpMongoClient(string connectionString)
         {
-            WordsDataContext.SetUpMongoClient(settings);
+            WordsDataContext.SetUpMongoClient(connectionString);
         }
     }
 }

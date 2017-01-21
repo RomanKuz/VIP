@@ -7,7 +7,8 @@ module Interfaces {
         connectToNewGroup(displayName: string, 
                           level: Models.Level, 
                           isGameWithFriend:boolean,
-                          groupId: string): JQueryPromise<any>
+                          groupId: string,
+                          isAuth: boolean): JQueryPromise<any>
 
         doMove(moveOrder: number, word: string, variant:string): JQueryPromise<Models.MoveResult>
 
