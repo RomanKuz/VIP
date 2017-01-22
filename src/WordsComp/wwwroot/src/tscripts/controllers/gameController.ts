@@ -121,7 +121,7 @@ module controllers {
                             return array;
                       }
                       this.$scope.leftWords = shuffle(this.words.slice(1));
-                      this.$scope.user2Info = isUser1 ? game.user1.authInfo : game.user2.authInfo;
+                      this.$scope.user2Info = isUser1 ? game.user2.authInfo : game.user1.authInfo;
             });
 
             this.stateHandler.handleGameStarted();
