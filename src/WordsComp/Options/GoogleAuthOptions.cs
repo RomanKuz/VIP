@@ -1,10 +1,7 @@
-﻿using System;
-namespace WordsComp.Options
+﻿namespace WordsComp.Options
 {
-    public class GoogleAuthOptions
+    public class GoogleAuthOptions: AuthOptionsBase
     {
-        public string ClientId { get; set; }
-
-        public string ClientSecret { get; set; }
+        
     }
 }

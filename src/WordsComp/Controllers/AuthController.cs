@@ -3,22 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Google.Apis.Auth.OAuth2.Flows;
-using Google.Apis.Auth.OAuth2.Requests;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WordsComp.Concrete.Auth;
 using WordsComp.Options;
 using WordsComp.RestModels;
+using HttpMethod = System.Net.Http.HttpMethod;
 
 namespace WordsComp.Controllers
 {
@@ -27,13 +22,16 @@ namespace WordsComp.Controllers
     {
         private readonly IOptions<FacebookAuthOptions> facebookOptions;
         private readonly IOptions<GoogleAuthOptions> googeOptions;
+        private readonly IOptions<TwitterAuthOptions> twitterOptions;
         private static readonly HttpClient client = new HttpClient();
 
         public AuthController(IOptions<FacebookAuthOptions> facebookOptions,
-                              IOptions<GoogleAuthOptions> googeOptions)
+                              IOptions<GoogleAuthOptions> googeOptions,
+                              IOptions<TwitterAuthOptions> twitterOptions)
         {
             this.facebookOptions = facebookOptions;
             this.googeOptions = googeOptions;
+            this.twitterOptions = twitterOptions;
         }
 
         private async Task SingIn(ClaimsIdentity identity, string authType)
@@ -169,6 +167,13 @@ namespace WordsComp.Controllers
 
             await SingIn(identity, "google");
             return Ok();
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public Task<IActionResult> Twitter([FromBody]ExternalLoginInfo loginInfo)
+        {
+            throw new NotImplementedException();
         }
 
         [Authorize]

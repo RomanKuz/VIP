@@ -87,7 +87,8 @@ namespace WordsComp
                 options.Hubs.EnableJavaScriptProxies = true;
             });
             services.Configure<FacebookAuthOptions>(Configuration.GetSection("facebook"))
-                    .Configure<GoogleAuthOptions>(Configuration.GetSection("google"));
+                    .Configure<GoogleAuthOptions>(Configuration.GetSection("google"))
+                    .Configure<TwitterAuthOptions>(Configuration.GetSection("twitter"));
             services.AddMvc();
             services.AddSingleton<IHubActivator>(
                 new SimpleInjectorHubActivator(container));

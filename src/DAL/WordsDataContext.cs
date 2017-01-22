@@ -11,7 +11,9 @@ namespace DAL
 
         public static void SetUpMongoClient(string connectionString)
         {
-            client = string.IsNullOrEmpty(connectionString) ? new MongoClient() : new MongoClient(connectionString);
+            if (string.IsNullOrEmpty(connectionString))
+                throw new ArgumentException("Value cannot be null or empty.", nameof(connectionString));
+            client = new MongoClient(connectionString);
             db = client.GetDatabase("WordsStorage");
         }
 
