@@ -9,7 +9,12 @@ namespace BLogic.Interfaces
     {
         string AssociatedGroupId { get; }
 
-        Task<Game> StartGame(UserInfo user1, UserInfo user2, string groupId, WordLevel wordLevel, bool isGameWithBot);
+        Task<Game> StartGame(UserInfo user1, 
+                             UserInfo user2, 
+                             string groupId, 
+                             WordLevel wordLevel, 
+                             bool isGameWithBot, 
+                             int wordsCount);
 
         MoveResult DoMove(Move userMove, string word, string variant);
 

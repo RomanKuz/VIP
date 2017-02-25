@@ -1,7 +1,7 @@
 /// <reference path="common.ts" />
 module App {
     var constants = Common.GetConstants();
-    var app = angular.module(constants.appName, ['ui.bootstrap.modal', 'ngAnimate', 'angularSpinner', 'rx', 'satellizer']);
+    var app = angular.module(constants.appName, ['ui.bootstrap.modal', 'ngAnimate', 'angularSpinner', 'rx', 'satellizer', 'ui.bootstrap-slider']);
     app.config(['usSpinnerConfigProvider', '$authProvider', function (usSpinnerConfigProvider, $authProvider) {
         usSpinnerConfigProvider.setDefaults({color: '#5B91DE'});
 

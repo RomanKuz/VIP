@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Threading;
 using System.Threading.Tasks;
 using BLogic.Interfaces;
 using BLogic.Models;
@@ -16,7 +15,35 @@ namespace BLogic.Concrete
     {
         public class UserGroupsCollector: IUserGroupsCollector
         {
-            private static readonly string[] russionMostPopularNames = new[]
+            private class UserFilterKey
+            {
+                private readonly WordLevel level;
+                private readonly int filter;
+
+                public UserFilterKey(WordLevel level, int filter)
+                {
+                    this.level = level;
+                    this.filter = filter;
+                }
+
+                public override bool Equals(object obj)
+                {
+                    var otherKey = obj as UserFilterKey;
+                    if (otherKey == null)
+                    {
+                        return false;
+                    }
+
+                    return level == otherKey.level && filter == otherKey.filter;
+                }
+
+                public override int GetHashCode()
+                {
+                    return (int) level * 500 + filter; // suppose filter value could not be bigger than 500
+                }
+            }
+
+            private static readonly string[] russionMostPopularNames = new[] // TODO: Should be better stored elsewhere to have possibility to configure
             {
                 "Настя",
                 "Мария",
@@ -38,26 +65,16 @@ namespace BLogic.Concrete
                 "Андрей"
             };
 
-            private static readonly ConcurrentQueue<UserGroup> internalWaitingBeginerUserQueue;
-            private static readonly ConcurrentQueue<UserGroup> internalWaitingIntermediateUserQueue;
-            private static readonly ConcurrentQueue<UserGroup> internalWaitingAdvancedUserQueue;
+            private static readonly ConcurrentDictionary<int, UserGroup> waitingUsers;
             private static readonly ConcurrentDictionary<string, UserGroup> userGroupDictionary;
             private static readonly ConcurrentDictionary<string, UserGroup> friendsRoomsDictionary;
+            private static readonly ConcurrentDictionary<UserFilterKey, IDisposable> bots; 
             private readonly IServiceProvider serviceProvider;
             private readonly Subject<UserGroup> groupFulledSubject;
             private readonly Subject<UserGroup> userLeftGroupObservable;
             private readonly Subject<string> userAddedToGroup;
             private readonly Subject<IGameProvider> gameStarted;
             private readonly Subject<UserGroup> failedToLoadGameSubject;
-
-            private readonly object internalWaitingBeginerUserQueueBotTimerLocker = new object();
-            private volatile IDisposable internalWaitingBeginerUserQueueBotTimer;
-
-            private readonly object internalWaitingIntermediateUserQueueBotTimerLocker = new object();
-            private volatile IDisposable internalWaitingIntermediateUserQueueQueueBotTimer;
-
-            private readonly object internalWaitingAdvancedUserQueueBotTimerLocker = new object();
-            private volatile IDisposable internalWaitingAdvancedUserQueueBotTimer;
 
             public UserGroupsCollector(IServiceProvider serviceProvider)
             {
@@ -71,11 +88,10 @@ namespace BLogic.Concrete
 
             static UserGroupsCollector()
             {
-                internalWaitingBeginerUserQueue = new ConcurrentQueue<UserGroup>();
-                internalWaitingIntermediateUserQueue = new ConcurrentQueue<UserGroup>();
-                internalWaitingAdvancedUserQueue = new ConcurrentQueue<UserGroup>();
+                waitingUsers = new ConcurrentDictionary<int, UserGroup>();
                 userGroupDictionary = new ConcurrentDictionary<string, UserGroup>();
                 friendsRoomsDictionary = new ConcurrentDictionary<string, UserGroup>();
+                bots = new ConcurrentDictionary<UserFilterKey, IDisposable>();
             }
 
             private static string GetRandomBotName()
@@ -85,61 +101,25 @@ namespace BLogic.Concrete
                 return russionMostPopularNames[rindex];
             }
 
-            private static ConcurrentQueue<UserGroup> GetUserQueueByLevel(WordLevel level)
+            private void DelayBotTimer(WordLevel level, int filter)
             {
-                switch (level)
+                IDisposable timerDisp = null;
+                if (bots.TryRemove(new UserFilterKey(level, filter), out timerDisp))
                 {
-                    case WordLevel.Beginer:
-                        return internalWaitingBeginerUserQueue;
-                    
-                    case WordLevel.Intermediate:
-                        return internalWaitingIntermediateUserQueue;
-
-                    case WordLevel.Advanced:
-                        return internalWaitingAdvancedUserQueue;
-
-                    default:
-                        throw new ArgumentException(nameof(level));
-                }
-            }
-
-            private Tuple<IDisposable, object> GetTimerDisposableAndLocker(WordLevel level)
-            {
-                switch (level)
-                {
-                    case WordLevel.Beginer:
-                        return Tuple.Create(internalWaitingBeginerUserQueueBotTimer,
-                                            internalWaitingBeginerUserQueueBotTimerLocker);
-
-                    case WordLevel.Intermediate:
-                        return Tuple.Create(internalWaitingIntermediateUserQueueQueueBotTimer,
-                                            internalWaitingIntermediateUserQueueBotTimerLocker);
-
-                    case WordLevel.Advanced:
-                        return Tuple.Create(internalWaitingAdvancedUserQueueBotTimer,
-                                            internalWaitingAdvancedUserQueueBotTimerLocker);
-
-                    default:
-                        throw new ArgumentException(nameof(level));
-                }
-            }
-
-            private void DelayBotTimer(WordLevel level)
-            {
-                var tuple = GetTimerDisposableAndLocker(level);
-                if (tuple.Item1 != null)
-                {
-                    lock (tuple.Item2)
-                    {
-                        tuple.Item1?.Dispose();
-                    }
+                   timerDisp?.Dispose();
                 }
             }
 
             public async Task AddUserToQueue(UserInfo newUser,
+                                             int wordsCountFilter,
                                              bool isGameWithFriend = false,
                                              string friendsGroupId = null)
             {
+                if (wordsCountFilter <= 0)
+                {
+                    throw new ArgumentException(nameof(wordsCountFilter));
+                }
+
                 if (isGameWithFriend
                     && string.IsNullOrEmpty(friendsGroupId))
                 {
@@ -148,7 +128,7 @@ namespace BLogic.Concrete
 
                 if (!newUser.IsBot && !isGameWithFriend)
                 {
-                    DelayBotTimer(newUser.GameLevel);
+                    DelayBotTimer(newUser.GameLevel, wordsCountFilter);
                 }
 
                 if (userGroupDictionary.ContainsKey(newUser.UserId))
@@ -158,7 +138,6 @@ namespace BLogic.Concrete
 
                 bool isConnectedToExistingGroup = false;
                 UserGroup existingGroup = null;
-                ConcurrentQueue<UserGroup> queue = null;
 
                 if (isGameWithFriend)
                 {
@@ -166,12 +145,11 @@ namespace BLogic.Concrete
                 }
                 else
                 {
-                    queue = GetUserQueueByLevel(newUser.GameLevel);
-                    if (queue.TryDequeue(out existingGroup))
+                    if (waitingUsers.TryRemove(wordsCountFilter, out existingGroup))
                     {
-                        while (existingGroup != null && existingGroup.IsEmpty())
+                        if (existingGroup != null && existingGroup.IsEmpty())
                         {
-                            queue.TryDequeue(out existingGroup);
+                            existingGroup = null;
                         }
                     }
                 }
@@ -191,7 +169,7 @@ namespace BLogic.Concrete
 
                     try
                     {
-                        await gameProvider.StartGame(users[0], users[1], existingGroup.GetGroupId(), users[0].GameLevel, newUser.IsBot);
+                        await gameProvider.StartGame(users[0], users[1], existingGroup.GetGroupId(), users[0].GameLevel, newUser.IsBot, wordsCountFilter);
                         existingGroup.GameProvider = gameProvider;
                         gameStarted.OnNext(gameProvider);
                     }
@@ -215,7 +193,7 @@ namespace BLogic.Concrete
 
                     if (!isGameWithFriend)
                     {
-                        queue.Enqueue(newGroup);
+                        waitingUsers.TryAdd(wordsCountFilter, newGroup);
                     }
                     else
                     {
@@ -226,19 +204,21 @@ namespace BLogic.Concrete
 
                     if (!isGameWithFriend)
                     {
-                        SetUpBotTimer(newUser.GameLevel);
+                        SetUpBotTimer(newUser.GameLevel, wordsCountFilter);
                     }
                 }
             }
 
-            private void SetUpBotTimer(WordLevel level)
+            private void SetUpBotTimer(WordLevel level, int filter)
             {
-                var tuple = GetTimerDisposableAndLocker(level);
-                lock (tuple.Item2)
+                var key = new UserFilterKey(level, filter);
+                IDisposable timerDisp = null;
+                if (bots.TryRemove(key, out timerDisp))
                 {
-                    tuple.Item1?.Dispose();
+                    timerDisp?.Dispose();
+                }
 
-                    var disposable = Observable.Interval(TimeSpan.FromSeconds(8))
+                var disposable = Observable.Interval(TimeSpan.FromSeconds(8))
                             .Take(1)
                             .SelectMany(async _ =>
                             {
@@ -246,25 +226,15 @@ namespace BLogic.Concrete
                                     GetRandomBotName(),
                                     level,
                                     true,
-                                    false));
+                                    false),
+                                    filter);
                                 return Unit.Default;
                             })
                             .Subscribe();
 
-                    switch (level)
-                    {
-                        case WordLevel.Beginer:
-                            internalWaitingBeginerUserQueueBotTimer = disposable;
-                            break;
-
-                        case WordLevel.Intermediate:
-                            internalWaitingIntermediateUserQueueQueueBotTimer = disposable;
-                            break;
-
-                        case WordLevel.Advanced:
-                            internalWaitingAdvancedUserQueueBotTimer = disposable;
-                            break;
-                    }
+                if (!bots.TryAdd(key, disposable))
+                {
+                    disposable.Dispose();
                 }
             }
 

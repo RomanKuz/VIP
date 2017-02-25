@@ -33,6 +33,7 @@ module Services {
                                  level: Models.Level, 
                                  isGameWithFriend:boolean,
                                  groupId: string,
+                                 wordsCountFiler: number,
                                  isAuth: boolean): JQueryPromise<any> {
             let methodName = isAuth ? this.constants.hubConnectToGroupAsAuthUserMethodName
                                     : this.constants.hubConnectToGroupAsAnonUserMethodName;
@@ -44,11 +45,12 @@ module Services {
                                                    displayName, 
                                                    level, 
                                                    isGameWithFriend,
+                                                   wordsCountFiler,
                                                    groupId || values.id) // create new room if group id is null
                         });
             }
 
-            return this.hub.invoke(methodName, displayName, level, isGameWithFriend, groupId || "");
+            return this.hub.invoke(methodName, displayName, level, isGameWithFriend, wordsCountFiler, groupId || "");
         }
 
         public onConnectedToGroup(callBack:(userId: string) => void): void {

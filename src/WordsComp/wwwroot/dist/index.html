@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Words competion</title>
+    <title>Words competition</title>
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="external.css">
     <link rel="stylesheet" type="text/css" href="common.css">
@@ -15,7 +15,7 @@
         <div class="row">
             <!--passed words-->
             <div class="col-md-2 passedWords hidden-xs hidden-sm">
-                <div class="row passed-words-container" ng-animate-children="true" ng-repeat="x in passedWords">
+                <div class="row passed-words-container" ng-animate-children="true" ng-repeat="x in passedWords | limitTo:-maxLeftAndPassedWordsCount">
                     <div class="col-xs-12">
                         <div class="well well-sm passed-word" ng-class="{'success-move': x.wasPassed, 'wrong-move': !x.wasPassed}">
                             <span>{{x.word}}</span>
@@ -83,7 +83,7 @@
 
             <div class="col-xs-2 col-xs-offset-2 hidden-xs hidden-sm">
                 <div class="wordsLeft row" ng-animate-children="true">
-                    <div class="col-xs-12 well well-sm words-left-item" ng-repeat="x in leftWords">
+                    <div class="col-xs-12 well well-sm words-left-item" ng-repeat="x in leftWords | limitTo:maxLeftAndPassedWordsCount">
                         <span class='word-left-item-caption'>{{x.word}}</span>
                     </div>
                 </div>
@@ -148,6 +148,9 @@
                         </div>
                         <br />
                         <input class="form-control" type="textarea" placeholder="Ваше имя :)" ng-model="$root.displayName"></input>
+                        <br />
+                        <span class="text text-success">Кол-во слов: </span>
+                        <slider id="wordsCountSlider" ng-model="wordsCountConfig.wordsCountFilter" value="wordsCountFilter" min="wordsCountConfig.minValue" step="wordsCountConfig.step" max="wordsCountConfig.maxValue"></slider>
                     </div>
 
                     <div class="tab-pane" id="play-with-friend">
@@ -171,9 +174,7 @@
                 <div style="float:left">
                     <span ng-show="$root.isLoggedIn === false" class="text">Войти:</span>
                     <i ng-show="$root.isLoggedIn === false" class="fa fa-facebook-square fa-lg login-icon" aria-hidden="true" ng-click="authenticate('facebook')"></i>
-                    <i ng-show="$root.isLoggedIn === false" class="fa fa-vk fa-lg login-icon" aria-hidden="true" ng-click="authenticate('vk')"></i>
                     <i ng-show="$root.isLoggedIn === false" class="fa fa-google fa-lg login-icon" aria-hidden="true" ng-click="authenticate('google')"></i>
-                    <i ng-show="$root.isLoggedIn === false" class="fa fa-twitter fa-lg login-icon" aria-hidden="true" ng-click="authenticate('twitter')"></i>
                     <button ng-show="$root.isLoggedIn === true" class="btn btn-xs btn-danger" ng-click="logOut()">Выйти</button>
                 </div>
                 <button class="btn btn-default btn-submit" ng-show="startModalState === 1" ng-click="connectToGroup()">Начать игру</button>

@@ -8,6 +8,7 @@ module Interfaces {
                           level: Models.Level, 
                           isGameWithFriend:boolean,
                           groupId: string,
+                          wordsCountFiler: number,
                           isAuth: boolean): JQueryPromise<any>
 
         doMove(moveOrder: number, word: string, variant:string): JQueryPromise<Models.MoveResult>

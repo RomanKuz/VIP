@@ -34,5 +34,10 @@ namespace BLogic.Concrete
                 .ToListAsync();
             return dtoList.Select(Mapper.Map<WordBL>).ToList();
         }
+
+        public async Task PersistGameResultToDatabase()
+        {
+            
+        }
     }
 }

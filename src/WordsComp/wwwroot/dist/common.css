@@ -237,3 +237,7 @@ button {
   padding-left: 8px;
   vertical-align: middle;
 }
+#wordsCountSlider {
+  display: inline-block;
+  margin-left: 10px;
+}

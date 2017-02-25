@@ -18,6 +18,7 @@ module Interfaces {
 
         passedWords: Array<Models.PassedWordInfo>;
         leftWords: Array<Models.Word>;
+        maxLeftAndPassedWordsCount: number;
 
         secondsForMoveLeft: number;
         percentagesLeft: number;

@@ -37,7 +37,12 @@ namespace BLogic.Concrete
             return currentGame;
         }
 
-        public async Task<Game> StartGame(UserInfo user1, UserInfo user2, string groupId, WordLevel wordLevel, bool isGameWithBot)
+        public async Task<Game> StartGame(UserInfo user1, 
+                                          UserInfo user2, 
+                                          string groupId, 
+                                          WordLevel wordLevel, 
+                                          bool isGameWithBot,
+                                          int wordsCount)
         {
             AssociatedGroupId = groupId;
             IsGameWithBot = isGameWithBot;
@@ -56,7 +61,7 @@ namespace BLogic.Concrete
             });
 
             currentGame = new Game(user1, user2, groupId);
-            var words = await storageAdapter.GetRandomWords(10, wordLevel);
+            var words = await storageAdapter.GetRandomWords(wordsCount * 2, wordLevel);
             currentGame.StartGame(words);
             InitNewTimer(0);
 

@@ -7,6 +7,7 @@ namespace BLogic.Interfaces
     public interface IUserGroupsCollector
     {
         Task AddUserToQueue(UserInfo newUser,
+                            int wordsCountFilter,
                             bool isGameWithFriend = false,
                             string friendsGroupId = null);
 

@@ -13,6 +13,7 @@ module controllers {
         private $log: ng.ILogService;
         private displayNameCookieKey: string;
         private levelCookieKey: string;
+        private wordsCountCoockieKey: string;
         private existingRoomId: string;
         private guidRegex: RegExp;
         private roomIdFromUrl: string;
@@ -35,8 +36,9 @@ module controllers {
             this.stateHandler = stateHandler;
             this.$rootScope = $rootScope;
             this.coockieService = coockieService;
-            this.displayNameCookieKey = "displayName";
-            this.levelCookieKey = "levelName";
+            this.displayNameCookieKey = "dN";
+            this.levelCookieKey = "lN";
+            this.wordsCountCoockieKey = "wC";
             this.guidRegex = new RegExp("^roomId=[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?&level=[1-3]$", "i"); // ignore case
             this.$log = $log;
             this.$auth = $auth;
@@ -138,6 +140,13 @@ module controllers {
                            .select(change => change.newValue as Interfaces.GameMode)
                            .where(gameMode => gameMode === Interfaces.GameMode.onlineWithEverybody)
                            .subscribe(_ => this.$rootScope.urlForRoom = "");
+
+            this.$scope.wordsCountConfig = {
+                minValue: 5,
+                maxValue: 25,
+                step: 5,
+                wordsCountFilter: parseInt(this.coockieService.getCookie(this.wordsCountCoockieKey)) || 5
+            };
         }
 
         private initializeUserInfoFromCookies() {
@@ -184,6 +193,7 @@ module controllers {
             try {
                 this.coockieService.setCookie(this.displayNameCookieKey, displayName);
                 this.coockieService.setCookie(this.levelCookieKey, level);
+                this.coockieService.setCookie(this.wordsCountCoockieKey, this.$scope.wordsCountConfig.wordsCountFilter)
             }
             catch (error) {
                 this.$log.error(error);
@@ -201,6 +211,7 @@ module controllers {
                                                                       level,
                                                                       isGameWithFriend || false,
                                                                       groupId,
+                                                                      this.$scope.wordsCountConfig.wordsCountFilter,
                                                                       this.$rootScope.isLoggedIn)
                                                    .done(() => {
                                                        if (isGameWithFriend 

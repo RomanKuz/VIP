@@ -43,6 +43,7 @@ namespace WordsComp.Hubs
             WordLevel level,
             bool isGameWithFriend,
             string friendsGroupId,
+            int wordsCountFilter,
             bool isLoggedIn)
         {
             if (string.IsNullOrWhiteSpace(displayName)) throw new ArgumentNullException(nameof(displayName));
@@ -50,6 +51,7 @@ namespace WordsComp.Hubs
 
             await collector.AddUserToQueue(
                     new UserInfo(Context.ConnectionId, displayName, level, false, isLoggedIn, GetLoginInfoFromClaims()),
+                    wordsCountFilter,
                     isGameWithFriend,
                     friendsGroupId);
         }
@@ -57,6 +59,7 @@ namespace WordsComp.Hubs
         public async Task ConnectAnon(string displayName, 
                                       WordLevel level,
                                       bool isGameWithFriend,
+                                      int wordsCountFilter,
                                       string friendsGroupId)
         {
             if (Context.User.Identity.IsAuthenticated)
@@ -64,16 +67,17 @@ namespace WordsComp.Hubs
                 throw new HttpRequestException("User is authorized. Should use ConnectAsAuthUser method");
             }
 
-            await ConnectUser(displayName, level, isGameWithFriend, friendsGroupId, false);
+            await ConnectUser(displayName, level, isGameWithFriend, friendsGroupId, wordsCountFilter, false);
         }
 
         [Authorize]
         public async Task ConnectAsAuthUser(string displayName,
                                             WordLevel level,
                                             bool isGameWithFriend,
+                                            int wordsCountFilter,
                                             string friendsGroupId)
         {
-            await ConnectUser(displayName, level, isGameWithFriend, friendsGroupId, true);
+            await ConnectUser(displayName, level, isGameWithFriend, friendsGroupId, wordsCountFilter, true);
         }
 
         public MoveResultModel DoMove(Move move, string word, string variant)

@@ -14,5 +14,14 @@ module Interfaces {
         urlWithRoomId: string;
 
         connectToGroupErrorMessage: string;
+
+        wordsCountConfig: IWordsCountFilterConfig;
+    }
+
+    export interface IWordsCountFilterConfig {
+        maxValue: number;
+        minValue: number;
+        step: number;
+        wordsCountFilter: number;
     }
 }

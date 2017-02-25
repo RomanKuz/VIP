@@ -51,6 +51,7 @@ module controllers {
             this.stateHandler.setUpGameScope(this.$scope);
             let randomQuateIndex = Math.floor(Math.random() * this.quates.length);
             this.$scope.randomQuate = this.quates[randomQuateIndex];
+            this.$scope.maxLeftAndPassedWordsCount = 10;
 
             this.connectionHubService.onTimerTick((tick) => this.timerTick.call(this, tick))
         }
@@ -102,6 +103,12 @@ module controllers {
                                                       || (!isUser1 && this.gameInfo.currentMove === 2);
                       this.$scope.secondsForMoveLeft = 10;
                       this.$scope.percentagesLeft = 100;
+
+                      this.$scope.leftWords = [];
+                      angular.forEach(splitIntoChunks(this.words.slice(1), this.$scope.maxLeftAndPassedWordsCount), 
+                        (arr) => {
+                            this.$scope.leftWords = this.$scope.leftWords.concat(shuffle(arr));  
+                      });
                                                       
                       function shuffle(arr: Array<Models.Word>): Array<Models.Word> {
                             let array = arr.slice(0);
@@ -120,7 +127,14 @@ module controllers {
 
                             return array;
                       }
-                      this.$scope.leftWords = shuffle(this.words.slice(1));
+
+                      function splitIntoChunks(array: Array<Models.Word>, chunkSize: number): Array<Array<Models.Word>> {
+                            return [].concat.apply([],
+                                array.map(function(elem,i) {
+                                    return i%chunkSize ? [] : [array.slice(i,i+chunkSize)];
+                                })
+                            );
+                        }
                       this.$scope.user2Info = isUser1 ? game.user2.authInfo : game.user1.authInfo;
             });
 

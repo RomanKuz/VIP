@@ -11,10 +11,12 @@ var uglify = require('gulp-uglify');
 var ngAnnotate = require('gulp-ng-annotate');
 var gulpCopy = require('gulp-copy');
 var gulpif = require('gulp-if');
+var fs = require('fs');
 
 const customTsSrc = path.join(__dirname, './src/tscripts');
 var dest = null;
-const dependenciesTsSrc = path.join(__dirname, './node_modules');
+const dependenciesJsSrc = path.join(__dirname, './node_modules');
+const bowerDependencies = path.join(__dirname, './bower_components');
 
 var customTsScripts = [`${customTsSrc}/common.ts`,
     `${customTsSrc}/mixins/*.ts`,
@@ -27,18 +29,20 @@ var customTsScripts = [`${customTsSrc}/common.ts`,
     `${customTsSrc}/dom/*.ts`
 ];
 
-var dependenciesTsScripts = [`${dependenciesTsSrc}/angular/angular.js`,
-    `${dependenciesTsSrc}/jquery/dist/jquery.js`,
-    `${dependenciesTsSrc}/signalr/jquery.signalR.min.js`, // not minified file, minified is broken
-    `${dependenciesTsSrc}/angular-animate/angular-animate.js`,
-    `${dependenciesTsSrc}/bootstrap-less/js/bootstrap.js`,
-    `${dependenciesTsSrc}/angular-bootstrap-npm/dist/angular-bootstrap.js`,
-    `${dependenciesTsSrc}/rx/dist/rx.lite.js`,
-    `${dependenciesTsSrc}/rx-angular/dist/rx.angular.js`,
-    `${dependenciesTsSrc}/spin.js/spin.js`,
-    `${dependenciesTsSrc}/angular-spinner/angular-spinner.js`,
-    `${dependenciesTsSrc}/clipboard/dist/clipboard.js`,
-    `${dependenciesTsSrc}/jwt-decode/build/jwt-decode.js`
+var dependenciesJsScripts = [`${dependenciesJsSrc}/angular/angular.js`,
+    `${dependenciesJsSrc}/jquery/dist/jquery.js`,
+    `${dependenciesJsSrc}/signalr/jquery.signalR.min.js`, // not minified file, minified is broken
+    `${dependenciesJsSrc}/angular-animate/angular-animate.js`,
+    `${dependenciesJsSrc}/bootstrap-less/js/bootstrap.js`,
+    `${dependenciesJsSrc}/angular-bootstrap-npm/dist/angular-bootstrap.js`,
+    `${dependenciesJsSrc}/rx/dist/rx.lite.js`,
+    `${dependenciesJsSrc}/rx-angular/dist/rx.angular.js`,
+    `${dependenciesJsSrc}/spin.js/spin.js`,
+    `${dependenciesJsSrc}/angular-spinner/angular-spinner.js`,
+    `${dependenciesJsSrc}/clipboard/dist/clipboard.js`,
+    `${dependenciesJsSrc}/jwt-decode/build/jwt-decode.js`,
+    `${bowerDependencies}/seiyria-bootstrap-slider/dist/bootstrap-slider.min.js`,
+    `${bowerDependencies}/angular-bootstrap-slider/slider.js`
 ];
 
 var shouldBeMinified = false;
@@ -46,9 +50,15 @@ var shouldBeMinified = false;
 function customiseEnv(env) {
     if (env === 'prod') {
         shouldBeMinified = true;
-        dependenciesTsScripts.forEach(function(value, index) {
-            if (dependenciesTsScripts[index].indexOf('.min.js') === -1) {
-                dependenciesTsScripts[index] = value.replace(new RegExp('.js$'), '.min.js');
+        dependenciesJsScripts.forEach(function(value, index) {
+            // TODO: Remove this if
+            if (dependenciesJsScripts[index].indexOf('.min.js') === -1) {
+                var minifiedVersion = value.replace(new RegExp('.js$'), '.min.js');
+
+                // replace dependency with minified version if one exists
+                if (fs.existsSync(minifiedVersion)) {
+                    dependenciesJsScripts[index] = minifiedVersion;
+                }
             }
         });
         dest = path.join(__dirname, './dist');
@@ -58,12 +68,13 @@ function customiseEnv(env) {
     }
 }
 
-var lessDependencies = `${dependenciesTsSrc}/bootstrap-less/bootstrap/bootstrap.less`;
+var lessDependencies = `${dependenciesJsSrc}/bootstrap-less/bootstrap/bootstrap.less`;
 var customLess = path.join(__dirname, './src/customLess/common.less');
-var cssDependencies = [`${dependenciesTsSrc}/angular-busy/angular-busy.css`,
-    `${dependenciesTsSrc}/font-awesome/css/font-awesome.css`
+var cssDependencies = [`${dependenciesJsSrc}/angular-busy/angular-busy.css`,
+    `${dependenciesJsSrc}/font-awesome/css/font-awesome.css`,
+    `${bowerDependencies}/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css`
 ];
-var fontDependencies = `${dependenciesTsSrc}/font-awesome/fonts/*.*`;
+var fontDependencies = `${dependenciesJsSrc}/font-awesome/fonts/*.*`;
 var indexHtmlSrc = path.join(__dirname, './src/index.html');
 
 gulp.task('customTs', function() {
@@ -78,7 +89,7 @@ gulp.task('customTs', function() {
 });
 
 gulp.task('globalTs', function() {
-    gulp.src(dependenciesTsScripts)
+    gulp.src(dependenciesJsScripts)
         .pipe(concat('global.js'))
         .pipe(gulp.dest(dest));
 });
