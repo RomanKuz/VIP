@@ -5,12 +5,12 @@ using BLogic.Interfaces;
 
 namespace BLogic.Models
 {
-    public class UserGroup
+    public class UserGroup: IUserGroup
     {
-        private readonly IUserGroupsProvider userGroupsProvider;
+        private readonly IHubUserGroupsProvider userGroupsProvider;
         private string groupId;
 
-        public UserGroup(IUserGroupsProvider userGroupsProvider)
+        public UserGroup(IHubUserGroupsProvider userGroupsProvider)
         {
             this.userGroupsProvider = userGroupsProvider;
         }

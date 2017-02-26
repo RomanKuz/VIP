@@ -13,16 +13,16 @@ namespace BLogic.Interfaces
 
         void RemoveUser(string userId);
 
-        UserGroup GetUserGroup(string userId);
+        IUserGroup GetUserGroup(string userId);
 
-        IObservable<UserGroup> GroupFulledObservable { get; }
+        IObservable<IUserGroup> GroupFulledObservable { get; }
 
-        IObservable<UserGroup> UserLeftGroupObservable { get; }
+        IObservable<IUserGroup> UserLeftGroupObservable { get; }
 
         IObservable<string> UserAddedToGroup { get; }
 
         IObservable<IGameProvider> GameStarted { get; }
 
-        IObservable<UserGroup> FailedToLoadGameObservable { get; }
+        IObservable<IUserGroup> FailedToLoadGameObservable { get; }
     }
 }

@@ -196,7 +196,7 @@ namespace WordsComp
 
             container.RegisterSingleton<IServiceProvider>(container);
             container.RegisterSingleton<IUserGroupsCollector, UserGroupsCollector>();
-            container.RegisterSingleton<IUserGroupsProvider, UserGroupsProvider>();
+            container.RegisterSingleton<IHubUserGroupsProvider, UserGroupsProvider>();
             container.RegisterSingleton<IUserInteractionAdapter, UserInteractionAdapter>();
             container.RegisterSingleton(app.ApplicationServices.GetService<IConnectionManager>);
             container.Register<IWordStorageAdapter, WordStorageAdapter>();

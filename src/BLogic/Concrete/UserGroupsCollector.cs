@@ -65,32 +65,32 @@ namespace BLogic.Concrete
                 "Андрей"
             };
 
-            private static readonly ConcurrentDictionary<int, UserGroup> waitingUsers;
-            private static readonly ConcurrentDictionary<string, UserGroup> userGroupDictionary;
-            private static readonly ConcurrentDictionary<string, UserGroup> friendsRoomsDictionary;
+            private static readonly ConcurrentDictionary<int, IUserGroup> waitingUsers;
+            private static readonly ConcurrentDictionary<string, IUserGroup> userGroupDictionary;
+            private static readonly ConcurrentDictionary<string, IUserGroup> friendsRoomsDictionary;
             private static readonly ConcurrentDictionary<UserFilterKey, IDisposable> bots; 
             private readonly IServiceProvider serviceProvider;
-            private readonly Subject<UserGroup> groupFulledSubject;
-            private readonly Subject<UserGroup> userLeftGroupObservable;
+            private readonly Subject<IUserGroup> groupFulledSubject;
+            private readonly Subject<IUserGroup> userLeftGroupObservable;
             private readonly Subject<string> userAddedToGroup;
             private readonly Subject<IGameProvider> gameStarted;
-            private readonly Subject<UserGroup> failedToLoadGameSubject;
+            private readonly Subject<IUserGroup> failedToLoadGameSubject;
 
             public UserGroupsCollector(IServiceProvider serviceProvider)
             {
                 this.serviceProvider = serviceProvider;
-                groupFulledSubject = new Subject<UserGroup>();
-                userLeftGroupObservable = new Subject<UserGroup>();
+                groupFulledSubject = new Subject<IUserGroup>();
+                userLeftGroupObservable = new Subject<IUserGroup>();
                 userAddedToGroup = new Subject<string>();
                 gameStarted = new Subject<IGameProvider>();
-                failedToLoadGameSubject = new Subject<UserGroup>();
+                failedToLoadGameSubject = new Subject<IUserGroup>();
             }
 
             static UserGroupsCollector()
             {
-                waitingUsers = new ConcurrentDictionary<int, UserGroup>();
-                userGroupDictionary = new ConcurrentDictionary<string, UserGroup>();
-                friendsRoomsDictionary = new ConcurrentDictionary<string, UserGroup>();
+                waitingUsers = new ConcurrentDictionary<int, IUserGroup>();
+                userGroupDictionary = new ConcurrentDictionary<string, IUserGroup>();
+                friendsRoomsDictionary = new ConcurrentDictionary<string, IUserGroup>();
                 bots = new ConcurrentDictionary<UserFilterKey, IDisposable>();
             }
 
@@ -137,7 +137,7 @@ namespace BLogic.Concrete
                 }
 
                 bool isConnectedToExistingGroup = false;
-                UserGroup existingGroup = null;
+                IUserGroup existingGroup = null;
 
                 if (isGameWithFriend)
                 {
@@ -187,7 +187,7 @@ namespace BLogic.Concrete
                 if (!isConnectedToExistingGroup 
                     && !newUser.IsBot)
                 {
-                    var newGroup = serviceProvider.GetService<UserGroup>();
+                    var newGroup = serviceProvider.GetService<IUserGroup>();
                     await newGroup.EstablishConnection(newUser);
                     userGroupDictionary.TryAdd(newUser.UserId, newGroup);
 
@@ -242,14 +242,14 @@ namespace BLogic.Concrete
             {
                 if (userId == null) throw new ArgumentNullException(nameof(userId));
 
-                UserGroup existingGroup;
+                IUserGroup existingGroup;
                 if (userGroupDictionary.TryRemove(userId, out existingGroup))
                 {
                     existingGroup.DissconnectUser(userId);
 
                     if (!string.IsNullOrEmpty(existingGroup.FriendToConnectGroupId))
                     {
-                        UserGroup existingFriendsRoom;
+                        IUserGroup existingFriendsRoom;
                         friendsRoomsDictionary.TryRemove(existingGroup.FriendToConnectGroupId, out existingFriendsRoom);
                     }
                     userLeftGroupObservable.OnNext(existingGroup);
@@ -257,10 +257,10 @@ namespace BLogic.Concrete
                 }
             }
 
-            public UserGroup GetUserGroup(string userId)
+            public IUserGroup GetUserGroup(string userId)
             {
                 if (userId == null) throw new ArgumentNullException(nameof(userId));
-                UserGroup group;
+                IUserGroup group;
                 userGroupDictionary.TryGetValue(userId, out group);
                 return group;
             }
@@ -269,11 +269,11 @@ namespace BLogic.Concrete
 
             public IObservable<string> UserAddedToGroup => userAddedToGroup;
 
-            public IObservable<UserGroup> GroupFulledObservable => groupFulledSubject;
+            public IObservable<IUserGroup> GroupFulledObservable => groupFulledSubject;
 
-            public IObservable<UserGroup> UserLeftGroupObservable => userLeftGroupObservable;
+            public IObservable<IUserGroup> UserLeftGroupObservable => userLeftGroupObservable;
 
-            public IObservable<UserGroup> FailedToLoadGameObservable => failedToLoadGameSubject;
+            public IObservable<IUserGroup> FailedToLoadGameObservable => failedToLoadGameSubject;
         }
     }
 

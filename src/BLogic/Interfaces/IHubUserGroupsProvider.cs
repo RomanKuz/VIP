@@ -3,7 +3,7 @@ using BLogic.Models;
 
 namespace BLogic.Interfaces
 {
-    public interface IUserGroupsProvider
+    public interface IHubUserGroupsProvider
     {
         Task<string> CreateUserGroupAndAddUser(string userId);
 

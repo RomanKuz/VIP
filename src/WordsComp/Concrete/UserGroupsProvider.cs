@@ -7,7 +7,7 @@ using WordsComp.Hubs;
 
 namespace WordsComp.Concrete
 {
-    public class UserGroupsProvider: IUserGroupsProvider
+    public class UserGroupsProvider: IHubUserGroupsProvider
     {
         private readonly IConnectionManager connectionManager;
 
