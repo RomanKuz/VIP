@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Text.RegularExpressions;
 using AutoMapper;
 using BLogic;
@@ -202,6 +203,8 @@ namespace WordsComp
             container.Register<IWordStorageAdapter, WordStorageAdapter>();
             container.Register<IGameProvider, GameProvider>();
             container.RegisterSingleton<IHttpContextAccessor>(new HttpContextAccessor());
+            container.RegisterSingleton<IScheduler>(Scheduler.Default);
+            container.Register<IUserGroup, UserGroup>();
 
             DependencyResolverHelper.RegisterDependencies(container);
             var registration = container.GetRegistration(typeof(IGameProvider)).Registration;

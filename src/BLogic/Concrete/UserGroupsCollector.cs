@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -65,20 +66,22 @@ namespace BLogic.Concrete
                 "Андрей"
             };
 
-            private static readonly ConcurrentDictionary<int, IUserGroup> waitingUsers;
+            private static readonly ConcurrentDictionary<UserFilterKey, IUserGroup> waitingUsers;
             private static readonly ConcurrentDictionary<string, IUserGroup> userGroupDictionary;
             private static readonly ConcurrentDictionary<string, IUserGroup> friendsRoomsDictionary;
             private static readonly ConcurrentDictionary<UserFilterKey, IDisposable> bots; 
             private readonly IServiceProvider serviceProvider;
+            private readonly IScheduler botTimerScheduler;
             private readonly Subject<IUserGroup> groupFulledSubject;
             private readonly Subject<IUserGroup> userLeftGroupObservable;
             private readonly Subject<string> userAddedToGroup;
             private readonly Subject<IGameProvider> gameStarted;
             private readonly Subject<IUserGroup> failedToLoadGameSubject;
 
-            public UserGroupsCollector(IServiceProvider serviceProvider)
+            public UserGroupsCollector(IServiceProvider serviceProvider, IScheduler botTimerScheduler)
             {
                 this.serviceProvider = serviceProvider;
+                this.botTimerScheduler = botTimerScheduler;
                 groupFulledSubject = new Subject<IUserGroup>();
                 userLeftGroupObservable = new Subject<IUserGroup>();
                 userAddedToGroup = new Subject<string>();
@@ -88,7 +91,7 @@ namespace BLogic.Concrete
 
             static UserGroupsCollector()
             {
-                waitingUsers = new ConcurrentDictionary<int, IUserGroup>();
+                waitingUsers = new ConcurrentDictionary<UserFilterKey, IUserGroup>();
                 userGroupDictionary = new ConcurrentDictionary<string, IUserGroup>();
                 friendsRoomsDictionary = new ConcurrentDictionary<string, IUserGroup>();
                 bots = new ConcurrentDictionary<UserFilterKey, IDisposable>();
@@ -138,6 +141,7 @@ namespace BLogic.Concrete
 
                 bool isConnectedToExistingGroup = false;
                 IUserGroup existingGroup = null;
+                var newUserFilterKey = new UserFilterKey(newUser.GameLevel, wordsCountFilter);
 
                 if (isGameWithFriend)
                 {
@@ -145,7 +149,7 @@ namespace BLogic.Concrete
                 }
                 else
                 {
-                    if (waitingUsers.TryRemove(wordsCountFilter, out existingGroup))
+                    if (waitingUsers.TryRemove(newUserFilterKey, out existingGroup))
                     {
                         if (existingGroup != null && existingGroup.IsEmpty())
                         {
@@ -193,7 +197,7 @@ namespace BLogic.Concrete
 
                     if (!isGameWithFriend)
                     {
-                        waitingUsers.TryAdd(wordsCountFilter, newGroup);
+                        waitingUsers.TryAdd(newUserFilterKey, newGroup);
                     }
                     else
                     {
@@ -218,7 +222,7 @@ namespace BLogic.Concrete
                     timerDisp?.Dispose();
                 }
 
-                var disposable = Observable.Interval(TimeSpan.FromSeconds(8))
+                var disposable = Observable.Interval(TimeSpan.FromSeconds(8), botTimerScheduler)
                             .Take(1)
                             .SelectMany(async _ =>
                             {
