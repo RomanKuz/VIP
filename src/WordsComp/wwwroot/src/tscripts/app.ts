@@ -13,6 +13,12 @@ module App {
             clientId: '120933698219-um98tatsibhb70ip9209ravjut28tsfm.apps.googleusercontent.com'
         });
     }]);
+    app.directive('userInfo', function(){
+      return {
+        restrict: 'E',
+        templateUrl: 'userInfoTemplate.html'
+      }
+    });
     export function GetApp(): ng.IModule {
         return app;
     }
