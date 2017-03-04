@@ -14,6 +14,7 @@ var gulpCopy = require('gulp-copy');
 var gulpif = require('gulp-if');
 var del = require('del');
 var fs = require('fs');
+var templateCache = require('gulp-angular-templatecache');
 
 const customTsSrc = path.join(__dirname, './ClientApp/tscripts');
 var dest = path.join(__dirname, './wwwroot');;
@@ -74,16 +75,19 @@ var cssDependencies = [`${dependenciesJsSrc}/angular-busy/angular-busy.css`,
     `${bowerDependencies}/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css`
 ];
 var fontDependencies = `${dependenciesJsSrc}/font-awesome/fonts/*.*`;
-var modalWindowHtml = path.join(__dirname, './ClientApp/html/modalTemplates/*.html');
+var GamePageTemplates = [
+    path.join(__dirname, './ClientApp/html/pages/gamePage/modalTemplates/*.html'),
+    path.join(__dirname, './ClientApp/html/pages/gamePage/gamePage.html')
+];
 var htmlDependencies = [
-    path.join(__dirname, './ClientApp/html/*.html'),
-    modalWindowHtml
+    path.join(__dirname, './ClientApp/html/index.html')
 ];
 
 gulp.task('clean', function() {
-	return del(['./wwwroot/*.js',
-				'./wwwroot/*.html',
-				'./wwwroot/*.css']);
+    return del(['./wwwroot/*.js',
+        './wwwroot/*.html',
+        './wwwroot/*.css'
+    ]);
 });
 
 gulp.task('customTs', function() {
@@ -146,7 +150,8 @@ gulp.task('_internalBuild', function() {
             'cssDependencies',
             'customLess',
             'buildIndexHtml',
-            'copyFonts'
+            'copyFonts',
+            'gamePageTemplatesCache'
         ]);
 });
 
@@ -171,9 +176,19 @@ gulp.task('buildProd', function() {
         ]);
 });
 
+gulp.task('gamePageTemplatesCache', function() {
+    gulp.src(GamePageTemplates)
+        .pipe(templateCache({
+            standalone: true,
+            module: 'templates'
+        }))
+        .pipe(gulp.dest(dest));
+});
+
 gulp.task('watch', function() {
     customiseEnv('dev');
     gulp.watch(`${customTsSrc}/**/*.ts`, ['customTs']);
     gulp.watch(htmlDependencies, ['buildIndexHtml']);
     gulp.watch(customLess, ['customLess']);
+    gulp.watch(GamePageTemplates, ['gamePageTemplatesCache']);
 });
