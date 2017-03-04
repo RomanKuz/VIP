@@ -32,9 +32,6 @@ namespace WordsComp
 {
     public class Startup
     {
-        private static readonly Regex guidRegex = new Regex("^/roomId=[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?&level=[1-3]$",
-                                                            RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
         private class SimpleInjectorHubActivator : IHubActivator
         {
             private readonly Container container;
@@ -125,30 +122,6 @@ namespace WordsComp
                     context.Response.Redirect(httpsUrl);
                 }
             });
-
-            //app.MapWhen(context =>
-            //{
-            //    var path = context.Request.Path.Value;
-            //    return path.EndsWith(".html")
-            //           || path.EndsWith(".js")
-            //           || path.EndsWith(".css")
-            //           || path.EndsWith(".ico")
-            //           || path.EndsWith(".woff")
-            //           || path.EndsWith(".woff2"); // fonts
-            //}, config => config.UseStaticFiles(new StaticFileOptions()));
-
-            // Match requests for friends room game
-            //app.MapWhen(context => guidRegex.IsMatch(context.Request.Path.Value), 
-            //    branch =>
-            //    {
-            //        branch.Use((context, next) =>
-            //        {
-            //            context.Request.Path = new PathString("/index.html");
-            //            return next();
-            //        });
-
-            //        branch.UseStaticFiles(new StaticFileOptions());
-            //    });
 
             if (env.IsDevelopment())
             {
