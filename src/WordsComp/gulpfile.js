@@ -44,7 +44,9 @@ var dependenciesJsScripts = [`${dependenciesJsSrc}/angular/angular.js`,
     `${dependenciesJsSrc}/clipboard/dist/clipboard.js`,
     `${dependenciesJsSrc}/jwt-decode/build/jwt-decode.js`,
     `${bowerDependencies}/seiyria-bootstrap-slider/dist/bootstrap-slider.min.js`,
-    `${bowerDependencies}/angular-bootstrap-slider/slider.js`
+    `${bowerDependencies}/angular-bootstrap-slider/slider.js`,
+    `${dependenciesJsSrc}/angular-route/angular-route.js`,
+    `${dependenciesJsSrc}/satellizer/dist/satellizer.js`
 ];
 
 var shouldBeMinified = false;
@@ -74,7 +76,7 @@ var cssDependencies = [`${dependenciesJsSrc}/angular-busy/angular-busy.css`,
 var fontDependencies = `${dependenciesJsSrc}/font-awesome/fonts/*.*`;
 var modalWindowHtml = path.join(__dirname, './ClientApp/html/modalTemplates/*.html');
 var htmlDependencies = [
-    path.join(__dirname, './ClientApp/html/index.html'),
+    path.join(__dirname, './ClientApp/html/*.html'),
     modalWindowHtml
 ];
 
