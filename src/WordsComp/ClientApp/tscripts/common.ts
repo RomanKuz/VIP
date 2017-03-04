@@ -1,14 +1,14 @@
-/// <reference path="../typings/globals/angular/index.d.ts" />
-/// <reference path="../typings/globals/jquery/index.d.ts" />
-/// <reference path="../typings/globals/signalr/index.d.ts" />
-/// <reference path="../typings/globals/es6-shim/index.d.ts" />
-/// <reference path="../typings/globals/angular-ui-bootstrap/index.d.ts" />
+/// <reference path="../../typings/globals/angular/index.d.ts" />
+/// <reference path="../../typings/globals/jquery/index.d.ts" />
+/// <reference path="../../typings/globals/signalr/index.d.ts" />
+/// <reference path="../../typings/globals/es6-shim/index.d.ts" />
+/// <reference path="../../typings/globals/angular-ui-bootstrap/index.d.ts" />
 /// <reference path="../../node_modules/rx/ts/rx.d.ts" />
-/// <reference path="../typings/globals/rx.angular/index.d.ts" />
-/// <reference path="../typings/globals/angular-animate/index.d.ts" />
-/// <reference path="../typings/globals/angular-spinner/index.d.ts" />
-/// <reference path="../typings/globals/clipboard-js/index.d.ts" />
-/// <reference path="../typings/globals/bootstrap/index.d.ts" />
+/// <reference path="../../typings/globals/rx.angular/index.d.ts" />
+/// <reference path="../../typings/globals/angular-animate/index.d.ts" />
+/// <reference path="../../typings/globals/angular-spinner/index.d.ts" />
+/// <reference path="../../typings/globals/clipboard-js/index.d.ts" />
+/// <reference path="../../typings/globals/bootstrap/index.d.ts" />
 module Common {
     export class Constants {
         public appName: string;

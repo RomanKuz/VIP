@@ -1,0 +1,36 @@
+<div us-spinner="{radius:10, width:3, length: 10}" spinner-key="connect-to-group">
+    <div class="modal-body">
+        {{message}}
+        </br>
+        </br>
+        <div class="panel panel-success" ng-show="passedWords.length !== 0">
+            <div class="panel-heading">
+                Вы знаете:
+            </div>
+            <div class="panel-body">
+                <div class="panel-group">
+                    <div ng-repeat="x in passedWords">
+                        {{x.word}} - {{x.answer}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-danger" ng-show="wrongAttemps.length !== 0">
+            <div class="panel-heading">
+                Вы не угадали:
+            </div>
+            <div class="panel-body">
+                <div class="panel-group">
+                    <div ng-repeat="x in wrongAttemps">
+                        {{x.word}} - {{x.answer}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a class="btn btn-danger" ng-show="shouldShowCancelButton" href="/">Отменить</a>
+        <button class="btn btn-default btn-submit" ng-click="playAgain()">{{playAgainDisplayMsg}}</button>
+    </div>
+</div>

@@ -102,17 +102,11 @@ namespace WordsComp
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(),
-                env.EnvironmentName == "Development" ? @"wwwroot\dev" : @"wwwroot\dist"));
-
             ConfigureAuth(app);
 
             app.UseWebSockets()
                .UseSignalR()
-               .UseDefaultFiles(new DefaultFilesOptions()
-               {
-                   FileProvider = fileProvider
-               })
+               .UseDefaultFiles(new DefaultFilesOptions())
                .UseStaticFiles()
                .UseSimpleInjectorAspNetRequestScoping(container);
 
@@ -132,35 +126,29 @@ namespace WordsComp
                 }
             });
 
-            app.MapWhen(context =>
-            {
-                var path = context.Request.Path.Value;
-                return path.EndsWith(".html")
-                       || path.EndsWith(".js")
-                       || path.EndsWith(".css")
-                       || path.EndsWith(".ico")
-                       || path.EndsWith(".woff")
-                       || path.EndsWith(".woff2"); // fonts
-            }, config => config.UseStaticFiles(new StaticFileOptions()
-            {
-                FileProvider = fileProvider
-            }));
+            //app.MapWhen(context =>
+            //{
+            //    var path = context.Request.Path.Value;
+            //    return path.EndsWith(".html")
+            //           || path.EndsWith(".js")
+            //           || path.EndsWith(".css")
+            //           || path.EndsWith(".ico")
+            //           || path.EndsWith(".woff")
+            //           || path.EndsWith(".woff2"); // fonts
+            //}, config => config.UseStaticFiles(new StaticFileOptions()));
 
             // Match requests for friends room game
-            app.MapWhen(context => guidRegex.IsMatch(context.Request.Path.Value), 
-                branch =>
-                {
-                    branch.Use((context, next) =>
-                    {
-                        context.Request.Path = new PathString("/index.html");
-                        return next();
-                    });
+            //app.MapWhen(context => guidRegex.IsMatch(context.Request.Path.Value), 
+            //    branch =>
+            //    {
+            //        branch.Use((context, next) =>
+            //        {
+            //            context.Request.Path = new PathString("/index.html");
+            //            return next();
+            //        });
 
-                    branch.UseStaticFiles(new StaticFileOptions()
-                    {
-                        FileProvider = fileProvider
-                    });
-                });
+            //        branch.UseStaticFiles(new StaticFileOptions());
+            //    });
 
             if (env.IsDevelopment())
             {

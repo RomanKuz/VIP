@@ -1,0 +1,39 @@
+<div us-spinner="{radius:10, width:3, length: 10}" spinner-key="connect-to-group">
+    <div class="modal-header" ng-if="$root.isLoggedIn">
+        <img class="img-responsive img-rounded user-image" ng-if="$root.currentUserInfo.profileImage" ng-src="{{$root.currentUserInfo.profileImage}}"></img>
+        <h4 class="user-external-profile-name">{{$root.currentUserInfo.shortExternalProfileName}}</h4>
+    </div>
+    <div class="modal-body">
+        <ul class="nav nav-tabs" id="tabContent">
+            <li class="active"><a href="#play-online" ng-click="startModalState = 1" data-toggle="tab">Онлайн</a></li>
+            <li><a href="#play-with-friend" ng-click="startModalState = 2" data-toggle="tab">Играть с другом</a></li>
+        </ul>
+
+        <br />
+        <div class="alert alert-danger alert-dismissible" ng-show="connectToGroupErrorMessage && connectToGroupErrorMessage !== ''">
+            {{connectToGroupErrorMessage}}
+        </div>
+
+        <div class="tab-content">
+            <div class="tab-pane active" id="play-online">
+                <br />
+                <user-info></user-info>
+            </div>
+
+            <div class="tab-pane" id="play-with-friend">
+                <br />
+                <user-info></user-info>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <div style="float:left">
+            <span ng-show="$root.isLoggedIn === false" class="text">Войти:</span>
+            <i ng-show="$root.isLoggedIn === false" class="fa fa-facebook-square fa-lg login-icon" aria-hidden="true" ng-click="authenticate('facebook')"></i>
+            <i ng-show="$root.isLoggedIn === false" class="fa fa-google fa-lg login-icon" aria-hidden="true" ng-click="authenticate('google')"></i>
+            <button ng-show="$root.isLoggedIn === true" class="btn btn-xs btn-danger" ng-click="logOut()">Выйти</button>
+        </div>
+        <button class="btn btn-default btn-submit" ng-show="startModalState === 1" ng-click="connectToGroup()">Начать игру</button>
+        <button class="btn btn-default btn-submit" ng-show="startModalState === 2" ng-click="createAndConnectToCustomRoom()">Создать комнату</button>
+    </div>
+</div>

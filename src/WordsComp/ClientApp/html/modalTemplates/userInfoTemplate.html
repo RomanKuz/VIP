@@ -1,0 +1,15 @@
+<div class="dropdown">
+    <span class="text text-success">Уровень: </span>
+    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                             {{level.name}}
+                            <span class="caret"></span>
+                            </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+        <li ng-repeat="x in levels"><a href="#" ng-click="changeLevel(x)">{{x.name}}</a></li>
+    </ul>
+</div>
+<br />
+<input class="form-control" type="textarea" placeholder="Ваше имя :)" ng-model="$root.displayName"></input>
+<br />
+<span class="text text-success">Кол-во слов: </span>
+<slider id="wordsCountSlider" ng-model="wordsCountConfig.wordsCountFilter" value="wordsCountFilter" min="wordsCountConfig.minValue" step="wordsCountConfig.step" max="wordsCountConfig.maxValue"></slider>

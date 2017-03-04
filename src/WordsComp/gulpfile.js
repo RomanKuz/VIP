@@ -1,3 +1,4 @@
+/// <binding AfterBuild='build' Clean='clean' ProjectOpened='watch' />
 var gulp = require('gulp');
 var path = require('path');
 var sourcemaps = require('gulp-sourcemaps');
@@ -11,10 +12,11 @@ var uglify = require('gulp-uglify');
 var ngAnnotate = require('gulp-ng-annotate');
 var gulpCopy = require('gulp-copy');
 var gulpif = require('gulp-if');
+var del = require('del');
 var fs = require('fs');
 
-const customTsSrc = path.join(__dirname, './src/tscripts');
-var dest = null;
+const customTsSrc = path.join(__dirname, './ClientApp/tscripts');
+var dest = path.join(__dirname, './wwwroot');;
 const dependenciesJsSrc = path.join(__dirname, './node_modules');
 const bowerDependencies = path.join(__dirname, './bower_components');
 
@@ -31,7 +33,7 @@ var customTsScripts = [`${customTsSrc}/common.ts`,
 
 var dependenciesJsScripts = [`${dependenciesJsSrc}/angular/angular.js`,
     `${dependenciesJsSrc}/jquery/dist/jquery.js`,
-    `${dependenciesJsSrc}/signalr/jquery.signalR.min.js`, // not minified file, minified is broken
+    `${dependenciesJsSrc}/signalr/jquery.signalR.js`,
     `${dependenciesJsSrc}/angular-animate/angular-animate.js`,
     `${dependenciesJsSrc}/bootstrap-less/js/bootstrap.js`,
     `${dependenciesJsSrc}/angular-bootstrap-npm/dist/angular-bootstrap.js`,
@@ -51,31 +53,36 @@ function customiseEnv(env) {
     if (env === 'prod') {
         shouldBeMinified = true;
         dependenciesJsScripts.forEach(function(value, index) {
-            // TODO: Remove this if
-            if (dependenciesJsScripts[index].indexOf('.min.js') === -1) {
-                var minifiedVersion = value.replace(new RegExp('.js$'), '.min.js');
+            var minifiedVersion = value.replace(new RegExp('.js$'), '.min.js');
 
-                // replace dependency with minified version if one exists
-                if (fs.existsSync(minifiedVersion)) {
-                    dependenciesJsScripts[index] = minifiedVersion;
-                }
+            // replace dependency with minified version if one exists
+            if (fs.existsSync(minifiedVersion)) {
+                dependenciesJsScripts[index] = minifiedVersion;
             }
         });
-        dest = path.join(__dirname, './dist');
     } else {
         shouldBeMinified = false;
-        dest = path.join(__dirname, './dev');
     }
 }
 
 var lessDependencies = `${dependenciesJsSrc}/bootstrap-less/bootstrap/bootstrap.less`;
-var customLess = path.join(__dirname, './src/customLess/common.less');
+var customLess = path.join(__dirname, './ClientApp/customLess/common.less');
 var cssDependencies = [`${dependenciesJsSrc}/angular-busy/angular-busy.css`,
     `${dependenciesJsSrc}/font-awesome/css/font-awesome.css`,
     `${bowerDependencies}/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css`
 ];
 var fontDependencies = `${dependenciesJsSrc}/font-awesome/fonts/*.*`;
-var indexHtmlSrc = path.join(__dirname, './src/index.html');
+var modalWindowHtml = path.join(__dirname, './ClientApp/html/modalTemplates/*.html');
+var htmlDependencies = [
+    path.join(__dirname, './ClientApp/html/index.html'),
+    modalWindowHtml
+];
+
+gulp.task('clean', function() {
+	return del(['./wwwroot/*.js',
+				'./wwwroot/*.html',
+				'./wwwroot/*.css']);
+});
 
 gulp.task('customTs', function() {
     gulp.src(customTsScripts)
@@ -103,7 +110,7 @@ gulp.task('buildJs', function() {
 });
 
 gulp.task('buildIndexHtml', function() {
-    gulp.src(indexHtmlSrc)
+    gulp.src(htmlDependencies)
         .pipe(gulp.dest(dest));
 });
 
@@ -165,6 +172,6 @@ gulp.task('buildProd', function() {
 gulp.task('watch', function() {
     customiseEnv('dev');
     gulp.watch(`${customTsSrc}/**/*.ts`, ['customTs']);
-    gulp.watch(indexHtmlSrc, ['buildIndexHtml']);
+    gulp.watch(htmlDependencies, ['buildIndexHtml']);
     gulp.watch(customLess, ['customLess']);
 });
