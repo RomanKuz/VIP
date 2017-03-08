@@ -73,6 +73,7 @@ module controllers {
                 this.$http.post('/auth/logout', null).then(() => {
                     this.$rootScope.isLoggedIn = false;
                     this.$rootScope.currentUserInfo = null;
+                    this.$rootScope.$broadcast('logout');
                 }, (error) => this.$log.error(error));
             };
             this.connectionHubService.onConnectToHub(value => {
@@ -228,7 +229,7 @@ module controllers {
         }
 
         private generateUrlForRoom(roomId: string): string {
-            return "http://" + window.location.host + "/roomId=" + roomId + "&level=" + this.$rootScope.level.level;
+            return "https://" + window.location.host + "/roomId=" + roomId + "&level=" + this.$rootScope.level.level;
         }
     }
 

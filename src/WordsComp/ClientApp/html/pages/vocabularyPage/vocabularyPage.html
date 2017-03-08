@@ -1,4 +1,18 @@
-<div class="game-container container-fluid" ng-controller="controllers.GameController">
+<div class="game-container container-fluid" infinite-scroll-listen-for-event="vocabulary:refresh" infinite-scroll='vocabulary.getNext()' infinite-scroll-immediate-check='false' infinite-scroll-disabled='vocabulary.isBusy' infinite-scroll-distance='1'>
     <div class="row">
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#!/">Играть</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div class="row" ng-repeat="item in vocabulary.items">
+        <div class="col-xs-12 well well-sm">
+            <span>{{item.word}}</span>
+            <span>&nbsp;-&nbsp;</span>
+            <span>{{item.translation}}</span>
+        </div>
     </div>
 </div>

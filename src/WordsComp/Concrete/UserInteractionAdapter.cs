@@ -16,12 +16,15 @@ namespace WordsComp.Concrete
     {
         private readonly IUserGroupsCollector userGroupsCollector;
         private readonly IConnectionManager connectionManager;
+        private readonly IUserVocabularyStorage userVocabularyStorage;
 
         public UserInteractionAdapter(IUserGroupsCollector userGroupsCollector,
-                                      IConnectionManager connectionManager)
+                                      IConnectionManager connectionManager,
+                                      IUserVocabularyStorage userVocabularyStorage)
         {
             this.userGroupsCollector = userGroupsCollector;
             this.connectionManager = connectionManager;
+            this.userVocabularyStorage = userVocabularyStorage;
         }
 
         public void EstablishInteractionWithClients()
@@ -114,11 +117,11 @@ namespace WordsComp.Concrete
                 }
             });
 
-            gameProvider.GameFinishes
+            gameProvider.DidMove
                 .SubscribeOn(Scheduler.Default)
-                .Subscribe(gameRes =>
+                .Subscribe(moveRes =>
                 {
-                    // TODO: Persist to database
+                    userVocabularyStorage.SaveMoveResultToDatabase(moveRes.Item1);
                 });
 
             gameProvider.TimerTick.Subscribe(tick =>

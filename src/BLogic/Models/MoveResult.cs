@@ -14,6 +14,10 @@
 
         public int SelectedVariantIndex { get; set; }
 
+        public WordBL Word { get; set; }
+
+        public UserInfo User { get; set; }
+
         public bool IsSkipped { get; set; }
 
         public GameResult GameResult { get; set; }

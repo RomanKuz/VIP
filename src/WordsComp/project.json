@@ -34,7 +34,7 @@
     "Microsoft.Extensions.Logging.Console": "1.1.0",
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.1.0-preview4-final",
     "mongocsharpdriver": "2.4.1",
-    "SimpleInjector.Integration.AspNetCore.Mvc": "4.0.0-alpha2",
+    "SimpleInjector.Integration.AspNetCore.Mvc": "3.3.0",
     "Microsoft.Extensions.Configuration.UserSecrets": "1.1.0-*",
     "Microsoft.AspNetCore.Mvc": "1.1.0",
     "System.IdentityModel.Tokens.Jwt": "5.1.2",

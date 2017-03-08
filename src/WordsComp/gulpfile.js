@@ -18,7 +18,7 @@ var templateCache = require('gulp-angular-templatecache');
 
 const customTsSrc = path.join(__dirname, './ClientApp/tscripts');
 var dest = path.join(__dirname, './wwwroot');;
-const dependenciesJsSrc = path.join(__dirname, './node_modules');
+const npmDependencies = path.join(__dirname, './node_modules');
 const bowerDependencies = path.join(__dirname, './bower_components');
 
 var customTsScripts = [`${customTsSrc}/common.ts`,
@@ -32,22 +32,23 @@ var customTsScripts = [`${customTsSrc}/common.ts`,
     `${customTsSrc}/dom/*.ts`
 ];
 
-var dependenciesJsScripts = [`${dependenciesJsSrc}/angular/angular.js`,
-    `${dependenciesJsSrc}/jquery/dist/jquery.js`,
-    `${dependenciesJsSrc}/signalr/jquery.signalR.js`,
-    `${dependenciesJsSrc}/angular-animate/angular-animate.js`,
-    `${dependenciesJsSrc}/bootstrap-less/js/bootstrap.js`,
-    `${dependenciesJsSrc}/angular-bootstrap-npm/dist/angular-bootstrap.js`,
-    `${dependenciesJsSrc}/rx/dist/rx.lite.js`,
-    `${dependenciesJsSrc}/rx-angular/dist/rx.angular.js`,
-    `${dependenciesJsSrc}/spin.js/spin.js`,
-    `${dependenciesJsSrc}/angular-spinner/angular-spinner.js`,
-    `${dependenciesJsSrc}/clipboard/dist/clipboard.js`,
-    `${dependenciesJsSrc}/jwt-decode/build/jwt-decode.js`,
+var dependenciesJsScripts = [`${npmDependencies}/angular/angular.js`,
+    `${npmDependencies}/jquery/dist/jquery.js`,
+    `${npmDependencies}/signalr/jquery.signalR.js`,
+    `${npmDependencies}/angular-animate/angular-animate.js`,
+    `${npmDependencies}/bootstrap-less/js/bootstrap.js`,
+    `${npmDependencies}/angular-bootstrap-npm/dist/angular-bootstrap.js`,
+    `${npmDependencies}/rx/dist/rx.lite.js`,
+    `${npmDependencies}/rx-angular/dist/rx.angular.js`,
+    `${npmDependencies}/spin.js/spin.js`,
+    `${npmDependencies}/angular-spinner/angular-spinner.js`,
+    `${npmDependencies}/clipboard/dist/clipboard.js`,
+    `${npmDependencies}/jwt-decode/build/jwt-decode.js`,
     `${bowerDependencies}/seiyria-bootstrap-slider/dist/bootstrap-slider.min.js`,
     `${bowerDependencies}/angular-bootstrap-slider/slider.js`,
-    `${dependenciesJsSrc}/angular-route/angular-route.js`,
-    `${dependenciesJsSrc}/satellizer/dist/satellizer.js`
+    `${npmDependencies}/angular-route/angular-route.js`,
+    `${npmDependencies}/satellizer/dist/satellizer.js`,
+    `${npmDependencies}/ng-infinite-scroll/build/ng-infinite-scroll.js`
 ];
 
 var shouldBeMinified = false;
@@ -68,13 +69,13 @@ function customiseEnv(env) {
     }
 }
 
-var lessDependencies = `${dependenciesJsSrc}/bootstrap-less/bootstrap/bootstrap.less`;
+var lessDependencies = `${npmDependencies}/bootstrap-less/bootstrap/bootstrap.less`;
 var customLess = path.join(__dirname, './ClientApp/customLess/common.less');
-var cssDependencies = [`${dependenciesJsSrc}/angular-busy/angular-busy.css`,
-    `${dependenciesJsSrc}/font-awesome/css/font-awesome.css`,
+var cssDependencies = [`${npmDependencies}/angular-busy/angular-busy.css`,
+    `${npmDependencies}/font-awesome/css/font-awesome.css`,
     `${bowerDependencies}/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css`
 ];
-var fontDependencies = `${dependenciesJsSrc}/font-awesome/fonts/*.*`;
+var fontDependencies = `${npmDependencies}/font-awesome/fonts/*.*`;
 var GamePageTemplates = [
     path.join(__dirname, './ClientApp/html/pages/gamePage/modalTemplates/*.html'),
     path.join(__dirname, './ClientApp/html/pages/gamePage/gamePage.html')
@@ -82,6 +83,8 @@ var GamePageTemplates = [
 var htmlDependencies = [
     path.join(__dirname, './ClientApp/html/index.html')
 ];
+
+var vocabularyPage = './ClientApp/html/pages/vocabularyPage/vocabularyPage.html'
 
 gulp.task('clean', function() {
     return del(['./wwwroot/*.js',
@@ -120,6 +123,11 @@ gulp.task('buildIndexHtml', function() {
         .pipe(gulp.dest(dest));
 });
 
+gulp.task('buildVocabularyPage', function() {
+    gulp.src(vocabularyPage)
+        .pipe(gulp.dest(dest));
+});
+
 gulp.task('dependenciesLess', function() {
     gulp.src(lessDependencies)
         .pipe(gulpif(!shouldBeMinified, sourcemaps.init()))
@@ -151,7 +159,8 @@ gulp.task('_internalBuild', function() {
             'customLess',
             'buildIndexHtml',
             'copyFonts',
-            'gamePageTemplatesCache'
+            'gamePageTemplatesCache',
+            'buildVocabularyPage'
         ]);
 });
 
@@ -191,4 +200,5 @@ gulp.task('watch', function() {
     gulp.watch(htmlDependencies, ['buildIndexHtml']);
     gulp.watch(customLess, ['customLess']);
     gulp.watch(GamePageTemplates, ['gamePageTemplatesCache']);
+    gulp.watch(vocabularyPage, ['buildVocabularyPage']);
 });

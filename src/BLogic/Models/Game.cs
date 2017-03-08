@@ -7,6 +7,11 @@ namespace BLogic.Models
 {
     public class Game
     {
+        private readonly List<WordBL> user1FailedAttempts = new List<WordBL>();
+        private readonly List<WordBL> user1SuccessfulAttempts = new List<WordBL>();
+        private readonly List<WordBL> user2FailedAttempts = new List<WordBL>();
+        private readonly List<WordBL> user2SuccessfulAttempts = new List<WordBL>();
+
         private GameStatus gameStatus;
         private int currentWordIndex;
 
@@ -76,6 +81,7 @@ namespace BLogic.Models
             {
                 var userId = CurrentMove == Move.FirstUserMove ? User2.UserId : User1.UserId;
                 var userScore = CurrentMove == Move.FirstUserMove ? User1CurrentScore : User2CurrentScore;
+                var user = userMove == Move.FirstUserMove ? User1 : User2;
 
                 if (userMove != CurrentMove)
                 {
@@ -86,7 +92,9 @@ namespace BLogic.Models
                         ErrorMessage = "It is another user turn",
                         NextMoveUserId = userId,
                         IsLastMove = false,
-                        SelectedVariantIndex = -1
+                        SelectedVariantIndex = -1,
+                        Word = Words[currentWordIndex],
+                        User = user
                     };
                 }
 
@@ -100,7 +108,8 @@ namespace BLogic.Models
                         ErrorMessage = "No words any more. Smth bad happened. Game should be finished",
                         NextMoveUserId = userId,
                         IsLastMove = false,
-                        SelectedVariantIndex = -1
+                        SelectedVariantIndex = -1,
+                        User = user
                     };
                 }
 
@@ -116,7 +125,9 @@ namespace BLogic.Models
                         IsCorrect = false,
                         ErrorMessage = $"No such variant for word {word}",
                         NextMoveUserId = userId,
-                        SelectedVariantIndex = -1
+                        SelectedVariantIndex = -1,
+                        Word = wordInfo,
+                        User = user
                     };
                 }
 
@@ -126,7 +137,9 @@ namespace BLogic.Models
                     IsCorrect = true,
                     ErrorMessage = string.Empty,
                     NextMoveUserId = userId,
-                    SelectedVariantIndex = varIndex
+                    SelectedVariantIndex = varIndex,
+                    Word = wordInfo,
+                    User = user
                 };
 
                 if (variantInfo.IsCorrect)
@@ -138,6 +151,18 @@ namespace BLogic.Models
                 {
                     userScore.WrongMoves++;
                     res.IsSuccessful = false;
+                }
+
+                var collectionToAddMoveRes = userMove == Move.FirstUserMove
+                   ? res.IsSuccessful
+                       ? user1SuccessfulAttempts
+                       : user1FailedAttempts
+                   : res.IsSuccessful
+                       ? user2SuccessfulAttempts
+                       : user2FailedAttempts;
+                if (res.IsCorrect)
+                {
+                    collectionToAddMoveRes.Add(wordInfo);
                 }
 
                 GameResult gameRes;
@@ -168,7 +193,8 @@ namespace BLogic.Models
                     NextMoveUserId = userId,
                     IsSuccessful = false,
                     SelectedVariantIndex = -1,
-                    IsSkipped = true
+                    IsSkipped = true,
+                    Word = Words[currentWordIndex-1]
                 };
 
                 GameResult gameRes;
@@ -196,37 +222,33 @@ namespace BLogic.Models
                 User2
             };
 
+            res = new GameResult
+            {
+                User1SuccessfulAttempts = user1SuccessfulAttempts,
+                User1FailedAttempts = user1FailedAttempts,
+                User2SuccessfulAttempts = user2SuccessfulAttempts,
+                User2FailedAttempts = user2FailedAttempts,
+                GroupId = GroupId,
+                Users = users
+            };
+
             if (User1CurrentScore.SuccessfulMoves == User2CurrentScore.SuccessfulMoves)
             {
-                res = new GameResult
-                {
-                    Winner = 0,
-                    IsDraw = true,
-                    GroupId = GroupId,
-                    Users = users
-                };
+                res.Winner = -1;
+                res.IsDraw = true;
+
                 return true;
             }
             else if (User1CurrentScore.SuccessfulMoves > User2CurrentScore.SuccessfulMoves)
             {
-                res = new GameResult
-                {
-                    Winner = 1,
-                    IsDraw = false,
-                    GroupId = GroupId,
-                    Users = users
-                };
+                res.Winner = 1;
+                res.IsDraw = false;
                 return true;
             }
             else
             {
-                res = new GameResult
-                {
-                    Winner = 2,
-                    IsDraw = false,
-                    GroupId = GroupId,
-                    Users = users
-                };
+                res.Winner = 2;
+                res.IsDraw = false;
                 return true;
             }
         }

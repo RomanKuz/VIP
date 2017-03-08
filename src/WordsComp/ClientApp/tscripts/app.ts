@@ -1,7 +1,7 @@
 /// <reference path="common.ts" />
 module App {
     var constants = Common.GetConstants();
-    var app = angular.module(constants.appName, ['ui.bootstrap.modal', 'ngAnimate', 'angularSpinner', 'rx', 'satellizer', 'ui.bootstrap-slider', 'ngRoute', 'templates']);
+    var app = angular.module(constants.appName, ['ui.bootstrap.modal', 'ngAnimate', 'angularSpinner', 'rx', 'satellizer', 'ui.bootstrap-slider', 'ngRoute', 'templates', 'infinite-scroll']);
     app.config(['usSpinnerConfigProvider', '$authProvider', '$routeProvider', 
         function (usSpinnerConfigProvider: any, $authProvider: any, $routeProvider: any) {
             usSpinnerConfigProvider.setDefaults({color: '#5B91DE'});
@@ -15,8 +15,16 @@ module App {
             });
 
             $routeProvider.when("/", {
-                templateUrl : "gamePage.html"
-            });
+                templateUrl : "gamePage.html",
+                controller: "controllers.GameController"
+            })
+            .when("/vocabulary", {
+                templateUrl : "vocabularyPage.html",
+                controller: "controllers.VocabularyController"
+            })
+            // .otherwise({
+            //     templateUrl : "gamePage.html"
+            // });
         }]);
     app.directive('userInfo', function(){
       return {

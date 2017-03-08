@@ -1,7 +1,7 @@
 <div us-spinner="{radius:10, width:3, length: 10}" spinner-key="connect-to-group">
     <div class="modal-header" ng-if="$root.isLoggedIn">
-        <img class="img-responsive img-rounded user-image" ng-if="$root.currentUserInfo.profileImage" ng-src="{{$root.currentUserInfo.profileImage}}"></img>
-        <h4 class="user-external-profile-name">{{$root.currentUserInfo.shortExternalProfileName}}</h4>
+        <a class='btn' href="#!/vocabulary"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span class="text">Словарь</span></a>
+        <img class="img-responsive img-rounded user-image-floated" ng-if="$root.currentUserInfo.profileImage" ng-src="{{$root.currentUserInfo.profileImage}}"></img>
     </div>
     <div class="modal-body">
         <ul class="nav nav-tabs" id="tabContent">

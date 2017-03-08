@@ -8,3 +8,5 @@
 /// <reference path="./models/models.ts" />
 /// <reference path="./interfaces/iCookieService.ts" />
 /// <reference path="./interfaces/iUserInfo.ts" />
+/// <reference path="./interfaces/iVocabularyScope.ts" />
+/// <reference path="./interfaces/iVocabularyPages.ts" />

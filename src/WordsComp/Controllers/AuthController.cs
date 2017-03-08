@@ -20,14 +20,14 @@ namespace WordsComp.Controllers
     [Route("[controller]/[action]")]
     public class AuthController : Controller
     {
-        private readonly IOptions<FacebookAuthOptions> facebookOptions;
-        private readonly IOptions<GoogleAuthOptions> googeOptions;
-        private readonly IOptions<TwitterAuthOptions> twitterOptions;
+        private readonly FacebookAuthOptions facebookOptions;
+        private readonly GoogleAuthOptions googeOptions;
+        private readonly TwitterAuthOptions twitterOptions;
         private static readonly HttpClient client = new HttpClient();
 
-        public AuthController(IOptions<FacebookAuthOptions> facebookOptions,
-                              IOptions<GoogleAuthOptions> googeOptions,
-                              IOptions<TwitterAuthOptions> twitterOptions)
+        public AuthController(FacebookAuthOptions facebookOptions,
+                              GoogleAuthOptions googeOptions,
+                              TwitterAuthOptions twitterOptions)
         {
             this.facebookOptions = facebookOptions;
             this.googeOptions = googeOptions;
@@ -36,7 +36,7 @@ namespace WordsComp.Controllers
 
         private async Task SingIn(ClaimsIdentity identity, string authType)
         {
-            identity.Claims.Append(new Claim(AuthConstants.AUTH_EXTERNAL_PROVIDER_CLAIM_TYPE, authType));
+            identity.AddClaim(new Claim(AuthConstants.AUTH_EXTERNAL_PROVIDER_CLAIM_TYPE, authType));
             await HttpContext.Authentication.SignInAsync(AuthConstants.SIGN_IN_SCHEME,
                                                          new ClaimsPrincipal(identity),
                                                          new AuthenticationProperties {IsPersistent = true});
@@ -51,7 +51,7 @@ namespace WordsComp.Controllers
                 {
                     {"code", loginInfo.Code},
                     {"client_id", loginInfo.ClientId},
-                    {"client_secret", facebookOptions.Value.ClientSecret},
+                    {"client_secret", facebookOptions.ClientSecret},
                     {"redirect_uri", loginInfo.RedirectUri}
                 });
             var response = await client.GetAsync(authEndpoint, HttpContext.RequestAborted);
@@ -114,7 +114,7 @@ namespace WordsComp.Controllers
             {
                 new KeyValuePair<string, string>("code", loginInfo.Code),
                 new KeyValuePair<string, string>("client_id", loginInfo.ClientId),
-                new KeyValuePair<string, string>("client_secret", googeOptions.Value.ClientSecret),
+                new KeyValuePair<string, string>("client_secret", googeOptions.ClientSecret),
                 new KeyValuePair<string, string>("redirect_uri", loginInfo.RedirectUri),
                 new KeyValuePair<string, string>("grant_type", "authorization_code")
             });

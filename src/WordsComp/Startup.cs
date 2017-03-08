@@ -27,11 +27,18 @@ using WordsComp.Interfaces;
 using WordsComp.Options;
 using WordsComp.RestModels;
 using IApplicationBuilder = Microsoft.AspNetCore.Builder.IApplicationBuilder;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.Extensions.Options;
+using SimpleInjector.Integration.AspNetCore.Mvc;
 
 namespace WordsComp
 {
     public class Startup
     {
+        private static readonly Regex guidRegex = new Regex("^/roomId=[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?&level=[1-3]$",
+                                                    RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+
         private class SimpleInjectorHubActivator : IHubActivator
         {
             private readonly Container container;
@@ -79,22 +86,17 @@ namespace WordsComp
                 options.Hubs.EnableDetailedErrors = true;
                 options.Hubs.EnableJavaScriptProxies = true;
             });
-            services.Configure<FacebookAuthOptions>(Configuration.GetSection("facebook"))
-                    .Configure<GoogleAuthOptions>(Configuration.GetSection("google"))
-                    .Configure<TwitterAuthOptions>(Configuration.GetSection("twitter"));
             services.AddMvc();
             services.AddSingleton<IHubActivator>(
                 new SimpleInjectorHubActivator(container));
+            services.AddSingleton<IControllerActivator>(
+            new SimpleInjectorControllerActivator(container));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            container.Options.DefaultScopedLifestyle = new AspNetRequestLifestyle();
-
             InitializeContainer(app);
-
-            container.Verify();
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
@@ -128,7 +130,20 @@ namespace WordsComp
                 app.UseDeveloperExceptionPage();
             }
 
+            // Match requests for friends room game
+            app.MapWhen(context => guidRegex.IsMatch(context.Request.Path.Value),
+               branch =>
+               {
+                   branch.Use((context, next) =>
+                   {
+                       context.Request.Path = new PathString("/index.html");
+                       return next();
+                   });
+
+                   branch.UseStaticFiles(new StaticFileOptions());
+               });
             app.UseMvc();
+
             InitializeMapper();
             SetUpDbConnection();
             StartInteractionWithUser();
@@ -151,11 +166,15 @@ namespace WordsComp
 
         private void InitializeContainer(IApplicationBuilder app)
         {
+            app.UseSimpleInjectorAspNetRequestScoping(container);
             // Cross-wire ASP.NET services (if any). For instance:
             container.RegisterSingleton(app.ApplicationServices.GetService<ILoggerFactory>());
             // NOTE: Prevent cross-wired instances as much as possible.
             // See: https://simpleinjector.org/blog/2016/07/
 
+            container.RegisterSingleton(Configuration.GetSection("facebook").Get<FacebookAuthOptions>());
+            container.RegisterSingleton(Configuration.GetSection("google").Get<GoogleAuthOptions>());
+            container.RegisterSingleton(Configuration.GetSection("twitter").Get<TwitterAuthOptions>());
             container.RegisterSingleton<IServiceProvider>(container);
             container.RegisterSingleton<IUserGroupsCollector, UserGroupsCollector>();
             container.RegisterSingleton<IHubUserGroupsProvider, UserGroupsProvider>();
@@ -166,11 +185,15 @@ namespace WordsComp
             container.RegisterSingleton<IHttpContextAccessor>(new HttpContextAccessor());
             container.RegisterSingleton<IScheduler>(Scheduler.Default);
             container.Register<IUserGroup, UserGroup>();
+            container.RegisterSingleton<IUserVocabularyStorage, UserVocabularyStorage>();
 
             DependencyResolverHelper.RegisterDependencies(container);
             var registration = container.GetRegistration(typeof(IGameProvider)).Registration;
             registration.SuppressDiagnosticWarning(DiagnosticType.DisposableTransientComponent,
                 "UserGroupsCollector is responsible for disposing the object");
+
+            //container.RegisterMvcControllers(app); TODO: throws exception
+            container.Verify();
         }
 
         private void StartInteractionWithUser()
@@ -196,6 +219,8 @@ namespace WordsComp
                 config.CreateMap<MoveResult, MoveResultModel>();
                 config.CreateMap<Game, GameModel>();
                 config.CreateMap<GameResult, GameResultModel>();
+                config.CreateMap<VocabularyWordBL, VocabularyWord>();
+                config.CreateMap<UserVocabularyBL, UserVocabulary>();
 
                 MapperInitializerHelper.InitializeMapping(config);
             });

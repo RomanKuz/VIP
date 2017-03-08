@@ -8,6 +8,7 @@ using BLogic.Interfaces;
 using BLogic.Models;
 using Common.Models;
 using Microsoft.AspNetCore.SignalR;
+using WordsComp.Concrete;
 using WordsComp.Concrete.Auth;
 using WordsComp.RestModels;
 
@@ -29,13 +30,14 @@ namespace WordsComp.Hubs
                 return null;
             }
 
-            var claims = ((ClaimsIdentity) Context.User.Identity).Claims;
+            var claims = ((ClaimsIdentity) Context.User.Identity).Claims.ToArray();
             return new LoginUserInfo
             {
                 ProfileUrl = claims.FirstOrDefault(claim => claim.Type == AuthConstants.AUTH_USER_IMAGE_CLAIM_TYPE)
                                    ?.Value,
                 ShortExternalProfileName = claims.FirstOrDefault(claim => claim.Type == AuthConstants.SHORT_NAME_CLAIM_TYPE)
-                                   ?.Value
+                                   ?.Value,
+                UserId = claims.GetUserIdKey()
             };
         }
 

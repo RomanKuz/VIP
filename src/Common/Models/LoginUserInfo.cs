@@ -5,6 +5,9 @@ namespace Common.Models
 {
     public class LoginUserInfo
     {
+        [JsonIgnore]
+        public UserIdKey UserId { get; set; }
+
         [JsonProperty(AuthConstants.AUTH_USER_IMAGE_CLAIM_TYPE)]
         public string ProfileUrl { get; set; }
 

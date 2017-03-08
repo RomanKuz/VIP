@@ -49,5 +49,10 @@ namespace DAL
                     throw new ArgumentException(nameof(collectionType));
             }
         }
+
+        public IMongoCollection<VocabularyWordDTO> GetUserVocabularyCollection()
+        {
+            return db.GetCollection<VocabularyWordDTO>("vocabularies");
+        }
     }
 }
