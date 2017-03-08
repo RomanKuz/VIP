@@ -96,20 +96,6 @@ namespace WordsComp
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            InitializeContainer(app);
-
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
-            ConfigureAuth(app);
-
-            app.UseWebSockets()
-               .UseSignalR()
-               .UseDefaultFiles(new DefaultFilesOptions())
-               .UseStaticFiles()
-               .UseSimpleInjectorAspNetRequestScoping(container);
-
-
             // Will not work correctly for dev environment, 
             // because dev environment uses different port for ssl
             app.Use(async (context, next) =>
@@ -124,6 +110,20 @@ namespace WordsComp
                     context.Response.Redirect(httpsUrl);
                 }
             });
+
+            InitializeContainer(app);
+
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+            loggerFactory.AddDebug();
+
+            ConfigureAuth(app);
+
+            app.UseWebSockets()
+               .UseSignalR()
+               .UseDefaultFiles(new DefaultFilesOptions())
+               .UseStaticFiles()
+               .UseSimpleInjectorAspNetRequestScoping(container);
+            
 
             if (env.IsDevelopment())
             {
