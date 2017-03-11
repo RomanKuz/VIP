@@ -1,4 +1,4 @@
-<div class="game-container container-fluid" infinite-scroll-listen-for-event="vocabulary:refresh" infinite-scroll='vocabulary.getNext()' infinite-scroll-immediate-check='false' infinite-scroll-disabled='vocabulary.isBusy' infinite-scroll-distance='1'>
+<div class="game-container container-fluid" infinite-scroll='vocabulary.getNext()' infinite-scroll-disabled='vocabulary.isBusy' infinite-scroll-distance='1'>
     <div class="row">
         <nav class="navbar navbar-default">
             <div class="container-fluid">
@@ -15,4 +15,5 @@
             <span>{{item.translation}}</span>
         </div>
     </div>
+    <div class="row" us-spinner="{radius:15, width:3, length: 10}" spinner-key="vocabulary-spinner"></div>
 </div>

@@ -12,7 +12,7 @@ module Interfaces {
     }
 
     export interface IStateHandler {
-        setUpGameScope($gameScope: Interfaces.IGameScope): void;
+        setUpGameScope($gameScope: Interfaces.IGameScope): void
         handleGameFinished(isWin?: boolean, isDraw?: boolean): void;
 
         handleConnectionToGroup(promise: JQueryPromise<any>): void;
@@ -33,5 +33,7 @@ module Interfaces {
         setConnectToGameScope(connectToGameScope: Interfaces.IConnectToGameScope): void;
 
         handleDisconnectedFromHub(): void;
+
+        handleVocabularyWordsLoading(promise: ng.IPromise<any>): void;
     }
 }

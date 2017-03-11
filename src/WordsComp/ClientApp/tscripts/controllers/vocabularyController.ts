@@ -19,7 +19,6 @@ module controllers {
         private initializeViewModel():void {
             this.$scope.vocabulary = this.vocabulary;
             this.vocabulary.clearState();
-            this.vocabulary.getNext();
         }
     }
 

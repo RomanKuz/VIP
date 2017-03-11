@@ -6,13 +6,18 @@ module Services {
         private cachedItems: Array<Models.VocabularyWord>;
         private itemsPerPage: number;
         private $log: ng.ILogService;
+        private stateHandler: Interfaces.IStateHandler;
 
-        static $inject = ["$http", "$log"];
-        constructor($http: ng.IHttpService, $log: ng.ILogService) {
+        static $inject = ["$http", "$log", "Services.StateHandlerService"];
+        constructor($http: ng.IHttpService, 
+                    $log: ng.ILogService,
+                    stateHandler: Interfaces.IStateHandler) 
+                    {
                         this.$http = $http;
                         this.clearState();
                         this.itemsPerPage = 15;
                         this.$log = $log;
+                        this.stateHandler = stateHandler;
                     }
         
         public items: Array<Models.VocabularyWord>;  
@@ -29,7 +34,8 @@ module Services {
             }
 
             this.isBusy = true;
-            this.$http.get('userVocabulary/vocabulary', {
+            this.stateHandler.handleVocabularyWordsLoading(
+                this.$http.get('userVocabulary/vocabulary', {
                     params: {
                         take: this.itemsPerPage, 
                         skip: this.items.length
@@ -48,7 +54,7 @@ module Services {
                 }, error => {
                     this.$log.error(error);
                     this.isBusy = false;
-                });
+                }));
         }      
 
         public clearState(): void {
@@ -72,12 +78,6 @@ module Services {
                 }
             }
         }
-
-        static factory() {
-            var instance = ($http: ng.IHttpService, $log: ng.ILogService) =>
-                new VocabularyPagesFactory($http, $log);
-            return instance;
-        }
     }
-    angular.module(Common.GetConstants().appName).service("Services.VocabularyPagesFactory", VocabularyPagesFactory.factory());
+    angular.module(Common.GetConstants().appName).service("Services.VocabularyPagesFactory", VocabularyPagesFactory);
 }

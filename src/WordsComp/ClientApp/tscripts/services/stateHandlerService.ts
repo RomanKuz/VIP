@@ -160,6 +160,12 @@ module Services {
             });
         }
 
+        private startSpinFromNgPromise<T>(spinKey: string, promise: ng.IPromise<T>): void {
+            this.usSpinnerService.spin(spinKey);
+
+            promise.finally(() => this.usSpinnerService.stop(spinKey));
+        }
+
         public setConnectToGameScope(connectToGameScope: Interfaces.IConnectToGameScope): void {
             this.connectToGameScope = connectToGameScope;
         }
@@ -293,6 +299,10 @@ module Services {
                     this.$rootScope.isStartGamePage = false;
                 });
             }
+        }
+
+        public handleVocabularyWordsLoading(promise: ng.IPromise<any>) {
+            this.startSpinFromNgPromise('vocabulary-spinner', promise);
         }
     }
 
