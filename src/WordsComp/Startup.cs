@@ -96,21 +96,6 @@ namespace WordsComp
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            // Will not work correctly for dev environment, 
-            // because dev environment uses different port for ssl
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.IsHttps)
-                {
-                    await next();
-                }
-                else
-                {
-                    var httpsUrl = $"https://{context.Request.Host}{context.Request.Path}";
-                    context.Response.Redirect(httpsUrl);
-                }
-            });
-
             InitializeContainer(app);
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
