@@ -5,6 +5,7 @@ module Services {
         private left: number;
         private cachedItems: Array<Models.VocabularyWord>;
         private itemsPerPage: number;
+        private cachedItemsTake: number;  
         private $log: ng.ILogService;
         private stateHandler: Interfaces.IStateHandler;
 
@@ -16,6 +17,7 @@ module Services {
                         this.$http = $http;
                         this.clearState();
                         this.itemsPerPage = 15;
+                        this.cachedItemsTake = 100;
                         this.$log = $log;
                         this.stateHandler = stateHandler;
                     }
@@ -37,8 +39,8 @@ module Services {
             this.stateHandler.handleVocabularyWordsLoading(
                 this.$http.get('userVocabulary/vocabulary', {
                     params: {
-                        take: this.itemsPerPage, 
-                        skip: this.items.length
+                        take: this.cachedItemsTake, 
+                        skip: this.cachedItems.length
                     }
                 })
                 .then(value => {

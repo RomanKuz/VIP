@@ -1,4 +1,4 @@
-<div class="game-container container-fluid" infinite-scroll='vocabulary.getNext()' infinite-scroll-disabled='vocabulary.isBusy' infinite-scroll-distance='1'>
+<div class="game-container container-fluid">
     <div class="row">
         <nav class="navbar navbar-default">
             <div class="container-fluid">
@@ -8,11 +8,15 @@
             </div>
         </nav>
     </div>
-    <div class="row" ng-repeat="item in vocabulary.items">
-        <div class="col-xs-12 well well-sm">
-            <span>{{item.word}}</span>
-            <span>&nbsp;-&nbsp;</span>
-            <span>{{item.translation}}</span>
+    <div class="row">
+        <div class="container-fluid" infinite-scroll='vocabulary.getNext()' infinite-scroll-disabled='vocabulary.isBusy'>
+            <div class="row" ng-repeat="item in vocabulary.items">
+                <div class="col-xs-12 well well-sm">
+                    <span>{{item.word}}</span>
+                    <span>&nbsp;-&nbsp;</span>
+                    <span>{{item.translation}}</span>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row" us-spinner="{radius:15, width:3, length: 10}" spinner-key="vocabulary-spinner"></div>
