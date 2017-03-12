@@ -97,7 +97,7 @@ namespace WordsComp
                 .AddRewrite(@"^.*/[1-3]/[0-9]+", //roomIdGuid/LevelNum/wordsCountFilter
                             "index.html",
                             true)
-                .AddRewrite("^vocabulary&", "index.html", true);
+                .AddRewrite("^vocabulary(?!Page)", "index.html", true); // redirect vocabulary page to main page and let angular handle routing
             app.UseRewriter(rewriteOptions);
 
             InitializeContainer(app);
