@@ -96,7 +96,8 @@ namespace WordsComp
             var rewriteOptions = new RewriteOptions()
                 .AddRewrite(@"^.*/[1-3]/[0-9]+", //roomIdGuid/LevelNum/wordsCountFilter
                             "index.html",
-                            true);
+                            true)
+                .AddRewrite("^vocabulary&", "index.html", true);
             app.UseRewriter(rewriteOptions);
 
             InitializeContainer(app);
