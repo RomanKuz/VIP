@@ -2,7 +2,6 @@
 /// <reference path="../models/models.ts" />
 module Interfaces {
     export interface IRootScope extends rx.angular.IRxScope {
-        
         // is set from statehandler and used by controllers
         isStartGamePage: boolean;
 
@@ -13,10 +12,15 @@ module Interfaces {
         level: Models.ILevelNamePair;
 
         gameMode: GameMode;
-        urlForRoom: string;
-        roomLevelFromUrl: Models.ILevelNamePair;
-
+        roomOptions: IRoomOptions;
+        
         isLoggedIn: boolean;
         currentUserInfo: Interfaces.IUserInfo;
+    }
+
+    export interface IRoomOptions {
+        urlForRoom: string;
+        roomLevelFromUrl: Models.ILevelNamePair;
+        wordsCount: number;
     }
 }

@@ -38,7 +38,8 @@
     "Microsoft.Extensions.Configuration.UserSecrets": "1.1.0-*",
     "Microsoft.AspNetCore.Mvc": "1.1.0",
     "System.IdentityModel.Tokens.Jwt": "5.1.2",
-    "Common": "1.0.0-*"
+    "Common": "1.0.0-*",
+    "Microsoft.AspNetCore.Rewrite": "1.0.1"
   },
   "frameworks": {
     "netcoreapp1.0": {

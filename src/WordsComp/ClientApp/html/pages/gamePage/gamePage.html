@@ -41,7 +41,7 @@
                     <br />
                     <blockquote ng-show="$root.gameMode === 1">{{randomQuate}}</blockquote>
                     <div class="input-group" ng-show="$root.gameMode === 2">
-                        <input id="roomUrl" class="form-control" value="{{$root.urlForRoom}}" readonly></input>
+                        <input id="roomUrl" class="form-control" value="{{$root.roomOptions.urlForRoom}}" readonly></input>
                         <span class="input-group-btn">
                                 <button id="copyToClipboardBtn" data-clipboard-action="copy" data-clipboard-target="#roomUrl" class="btn btn-default"><span class="glyphicon glyphicon-copy"></span></button>
                         </span>

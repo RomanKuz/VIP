@@ -7,7 +7,9 @@
             {{connectToGroupErrorMessage}}
         </div>
 
-        <span class="text">Уровень: {{$root.roomLevelFromUrl.name}}</span>
+        <span class="text">Уровень: {{$root.roomOptions.roomLevelFromUrl.name}}</span>
+        <br />
+        <span class="text">Кол-во слов: {{$root.roomOptions.wordsCount}}</span>
         <br />
         <br />
         <input class="form-control" type="textarea" placeholder="Ваше имя :)" ng-model="$root.displayName"></input>

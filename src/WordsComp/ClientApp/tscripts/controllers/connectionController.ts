@@ -15,9 +15,9 @@ module controllers {
         private levelCookieKey: string;
         private wordsCountCoockieKey: string;
         private existingRoomId: string;
-        private guidRegex: RegExp;
         private roomIdFromUrl: string;
         private roomLevelFromUrl: Models.Level;
+        private roomWordsCount: number;
         private createdRoomId: string;
         private $auth: any;
         private $http: ng.IHttpService;
@@ -39,7 +39,6 @@ module controllers {
             this.displayNameCookieKey = "dN";
             this.levelCookieKey = "lN";
             this.wordsCountCoockieKey = "wC";
-            this.guidRegex = new RegExp("^roomId=[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?&level=[1-3]$", "i"); // ignore case
             this.$log = $log;
             this.$auth = $auth;
             this.$http = $http;
@@ -115,11 +114,13 @@ module controllers {
             this.$rootScope.displayName = displayNameFromCookies;
             this.$rootScope.level = this.$scope.levels[levelFromCookies - 1]; 
             this.$scope.urlWithRoomId = window.location.pathname;
-            this.roomIdFromUrl = this.getParameterFromUrl("roomId");
-            this.roomLevelFromUrl = parseInt(this.getParameterFromUrl("level"));
+            this.roomIdFromUrl = this.getSegmentFromUrl(1);
+            this.roomLevelFromUrl = parseInt(this.getSegmentFromUrl(2));
+            this.roomWordsCount = parseInt(this.getSegmentFromUrl(3));
 
             if (this.roomLevelFromUrl) {
-                this.$rootScope.roomLevelFromUrl = this.$scope.levels.filter(v => v.level === this.roomLevelFromUrl)[0];
+                this.$rootScope.roomOptions.roomLevelFromUrl = this.$scope.levels.filter(v => v.level === this.roomLevelFromUrl)[0];
+                this.$rootScope.roomOptions.wordsCount = this.roomWordsCount;
             }
             this.$scope.startModalState = Interfaces.StartGameModalState.startNewGame;
 
@@ -134,13 +135,13 @@ module controllers {
             this.$rootScope.$toObservable('userId')
                            .select(change => change.newValue as string)
                            .where(id => id != null || id !== "")
-                           .subscribe(id => this.$rootScope.urlForRoom = this.generateUrlForRoom(this.roomIdFromUrl !== ""
+                           .subscribe(id => this.$rootScope.roomOptions.urlForRoom = this.generateUrlForRoom(this.roomIdFromUrl !== ""
                                 ? this.roomIdFromUrl 
                                 : this.createdRoomId || id));
             this.$rootScope.$toObservable('gameMode')
                            .select(change => change.newValue as Interfaces.GameMode)
                            .where(gameMode => gameMode === Interfaces.GameMode.onlineWithEverybody)
-                           .subscribe(_ => this.$rootScope.urlForRoom = "");
+                           .subscribe(_ => this.$rootScope.roomOptions.urlForRoom = "");
 
             this.$scope.wordsCountConfig = {
                 minValue: 5,
@@ -169,13 +170,9 @@ module controllers {
             }
         }
 
-        private getParameterFromUrl(name: string): string {
-            let url = location.href;
-            name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-            var regexS = "[\\?&/]"+name+"=([^&#]*)";
-            var regex = new RegExp( regexS );
-            var results = regex.exec( url );
-            return results == null ? "" : results[1];
+        private getSegmentFromUrl(index: number): string {
+            var pathArray = window.location.pathname.split( '/' );
+            return pathArray[index];
         }
 
         private onGroupFulled(groupInfo: Models.Group): void {
@@ -229,7 +226,8 @@ module controllers {
         }
 
         private generateUrlForRoom(roomId: string): string {
-            return "https://" + window.location.host + "/roomId=" + roomId + "&level=" + this.$rootScope.level.level;
+            return "https://" + window.location.host + "/" + roomId + "/" + this.$rootScope.level.level
+                + "/" + this.$scope.wordsCountConfig.wordsCountFilter;
         }
     }
 

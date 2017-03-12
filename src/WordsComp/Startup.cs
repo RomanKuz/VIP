@@ -28,6 +28,7 @@ using WordsComp.Options;
 using WordsComp.RestModels;
 using IApplicationBuilder = Microsoft.AspNetCore.Builder.IApplicationBuilder;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Options;
 using SimpleInjector.Integration.AspNetCore.Mvc;
 
@@ -35,10 +36,6 @@ namespace WordsComp
 {
     public class Startup
     {
-        private static readonly Regex guidRegex = new Regex("^/roomId=[{(]?[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}[)}]?&level=[1-3]$",
-                                                    RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-
         private class SimpleInjectorHubActivator : IHubActivator
         {
             private readonly Container container;
@@ -96,6 +93,12 @@ namespace WordsComp
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            var rewriteOptions = new RewriteOptions()
+                .AddRewrite(@"^.*/[1-3]/[0-9]+", //roomIdGuid/LevelNum/wordsCountFilter
+                            "index.html",
+                            true);
+            app.UseRewriter(rewriteOptions);
+
             InitializeContainer(app);
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
@@ -107,28 +110,13 @@ namespace WordsComp
                .UseSignalR()
                .UseDefaultFiles(new DefaultFilesOptions())
                .UseStaticFiles()
+               .UseMvc()
                .UseSimpleInjectorAspNetRequestScoping(container);
-            
-
+               
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            // Match requests for friends room game
-            app.MapWhen(context => guidRegex.IsMatch(context.Request.Path.Value),
-               branch =>
-               {
-                   branch.Use((context, next) =>
-                   {
-                       context.Request.Path = new PathString("/index.html");
-                       return next();
-                   });
-
-                   branch.UseStaticFiles(new StaticFileOptions());
-               });
-            app.UseMvc();
-
             InitializeMapper();
             SetUpDbConnection();
             StartInteractionWithUser();
