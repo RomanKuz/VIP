@@ -189,9 +189,8 @@ module Services {
                         this.startSpin('group-fulled', groupFulled);
 
                         const loadingGameSpinKey = 'loading-game';
-                        groupFulled.take(1)
-                                   .do(() => this.usSpinnerService.spin(loadingGameSpinKey))
-                                   .concat(Rx.Observable.merge(this.userLeftGroupObservable.take(1),
+                        groupFulled.do(() => this.usSpinnerService.spin(loadingGameSpinKey))
+                                   .zip(Rx.Observable.merge(this.userLeftGroupObservable.take(1),
                                                                this.gameStartedObservable.take(1))
                                                         .take(1))
                                    .subscribe(() => this.usSpinnerService.stop(loadingGameSpinKey));
