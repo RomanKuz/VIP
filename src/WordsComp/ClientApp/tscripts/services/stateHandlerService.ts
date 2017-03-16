@@ -171,6 +171,8 @@ module Services {
         }
 
         public handleConnectionToGroup(promise: JQueryPromise<any>): void {
+            this.startSpin('connect-to-group', Rx.Observable.fromPromise(promise));
+
             this.callInDigestLoop(() => {
                         this.connectToGameScope.connectToGroupErrorMessage = "";
                         let addedToGroup = this.addedToGroupObservable
@@ -186,11 +188,13 @@ module Services {
 
                         this.startSpin('group-fulled', groupFulled);
 
-                        groupFulled.subscribe(() => {
-                                this.startSpin('loading-game', Rx.Observable.merge(this.userLeftGroupObservable.take(1),
-                                                                                   this.gameStartedObservable.take(1))
-                                                                            .take(1));
-                            });
+                        const loadingGameSpinKey = 'loading-game';
+                        groupFulled.take(1)
+                                   .do(() => this.usSpinnerService.spin(loadingGameSpinKey))
+                                   .concat(Rx.Observable.merge(this.userLeftGroupObservable.take(1),
+                                                               this.gameStartedObservable.take(1))
+                                                        .take(1))
+                                   .subscribe(() => this.usSpinnerService.stop(loadingGameSpinKey));
                         
                         let onFailedToLoadGame = new Rx.Subject<any>();
                         this.connectToGameService.onFailedToLoadGame(() => onFailedToLoadGame.onNext({}));
@@ -199,8 +203,6 @@ module Services {
                             this.connectToGameService.stopHubConnection();
                             this.handleConnectToGroupError("Ошибка при загрузке игры. Попробуйте снова.");
                         });
-
-                        this.startSpin('connect-to-group', Rx.Observable.fromPromise(promise));
             });
 
             promise.fail((error) => {
@@ -241,6 +243,7 @@ module Services {
 
         public showStartGameWindow(): void {
             this.callInDigestLoop(() => {
+                        this.closeAllWindows();
                         this.showStartGameModal();
                     });
         }

@@ -15,16 +15,14 @@ module App {
                 clientId: '120933698219-um98tatsibhb70ip9209ravjut28tsfm.apps.googleusercontent.com'
             });
 
-            $routeProvider.when("/", {
-                templateUrl : "gamePage.html",
-                controller: "controllers.GameController"
-            })
-            .when("/vocabulary", {
+            $routeProvider.when("/vocabulary", {
                 templateUrl : "vocabularyPage.html",
                 controller: "controllers.VocabularyController"
             })
-            .otherwise({
-                templateUrl : "gamePage.html"
+            .when("/", {
+                templateUrl : "gamePage.html",
+                controller: "controllers.GameController",
+                reloadOnSearch: false
             });
 
             // use the HTML5 History API

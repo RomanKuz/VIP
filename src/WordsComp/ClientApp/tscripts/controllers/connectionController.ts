@@ -21,8 +21,10 @@ module controllers {
         private createdRoomId: string;
         private $auth: any;
         private $http: ng.IHttpService;
+        private $location: ng.ILocationService;
+        private $routeParams: any;
 
-        static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$rootScope", "Services.CookieService", "$log", "$auth", "$http"];
+        static $inject = ["Services.ConnectToGameService", "$scope", "Services.StateHandlerService", "$rootScope", "Services.CookieService", "$log", "$auth", "$http", "$location", "$routeParams"];
         constructor(connectionHubService: Interfaces.IConnectToGame, 
                     $scope: Interfaces.IConnectToGameScope, 
                     stateHandler: Interfaces.IStateHandler,
@@ -30,7 +32,9 @@ module controllers {
                     coockieService: Interfaces.ICookieService,
                     $log: ng.ILogService,
                     $auth: any,
-                    $http: ng.IHttpService) {
+                    $http: ng.IHttpService,
+                    $location: ng.ILocationService,
+                    $routeParams: any) {
             this.connectionHubService = connectionHubService;
             this.$scope = $scope;
             this.stateHandler = stateHandler;
@@ -42,6 +46,8 @@ module controllers {
             this.$log = $log;
             this.$auth = $auth;
             this.$http = $http;
+            this.$location = $location;
+            this.$routeParams = $routeParams;
             this.initializeViewModel();
         }
 
@@ -74,6 +80,13 @@ module controllers {
                     this.$rootScope.currentUserInfo = null;
                     this.$rootScope.$broadcast('logout');
                 }, (error) => this.$log.error(error));
+            };
+            this.$scope.dissconnectFromGroup = () => {
+                if (this.$rootScope.gameMode !== Interfaces.GameMode.withFriend) {
+                    return;
+                }
+                this.$location.search({});
+                this.stateHandler.showStartGameWindow();
             };
             this.connectionHubService.onConnectToHub(value => {
                 this.stateHandler.setUserId(value);
@@ -114,9 +127,10 @@ module controllers {
             this.$rootScope.displayName = displayNameFromCookies;
             this.$rootScope.level = this.$scope.levels[levelFromCookies - 1]; 
             this.$scope.urlWithRoomId = window.location.pathname;
-            this.roomIdFromUrl = this.getSegmentFromUrl(1);
-            this.roomLevelFromUrl = parseInt(this.getSegmentFromUrl(2));
-            this.roomWordsCount = parseInt(this.getSegmentFromUrl(3));
+            debugger;
+            this.roomIdFromUrl = this.$routeParams.roomId;
+            this.roomLevelFromUrl = parseInt(this.$routeParams.level);
+            this.roomWordsCount = parseInt(this.$routeParams.wordsCount);
 
             if (this.roomLevelFromUrl) {
                 this.$rootScope.roomOptions.roomLevelFromUrl = this.$scope.levels.filter(v => v.level === this.roomLevelFromUrl)[0];
@@ -124,20 +138,15 @@ module controllers {
             }
             this.$scope.startModalState = Interfaces.StartGameModalState.startNewGame;
 
-            if (this.roomIdFromUrl !== "") {
+            if (this.roomIdFromUrl) {
                 this.$rootScope.gameMode = Interfaces.GameMode.withFriend;
                 this.stateHandler.showConnectToRoomWindow();
+                this.$rootScope.roomOptions.urlForRoom = this.getCurrentUrl();
             } else {
                 this.$rootScope.gameMode = Interfaces.GameMode.onlineWithEverybody;
                 this.stateHandler.showStartGameWindow();
             }
 
-            this.$rootScope.$toObservable('userId')
-                           .select(change => change.newValue as string)
-                           .where(id => id != null || id !== "")
-                           .subscribe(id => this.$rootScope.roomOptions.urlForRoom = this.generateUrlForRoom(this.roomIdFromUrl !== ""
-                                ? this.roomIdFromUrl 
-                                : this.createdRoomId || id));
             this.$rootScope.$toObservable('gameMode')
                            .select(change => change.newValue as Interfaces.GameMode)
                            .where(gameMode => gameMode === Interfaces.GameMode.onlineWithEverybody)
@@ -215,6 +224,8 @@ module controllers {
                                                        if (isGameWithFriend 
                                                            && !groupId) {
                                                                this.createdRoomId = this.createdRoomId || rootScope.userId;
+                                                               this.$location.search({roomId: this.createdRoomId, level: this.$rootScope.level.level, wordsCount: this.$scope.wordsCountConfig.wordsCountFilter});
+                                                               this.$rootScope.roomOptions.urlForRoom = this.getCurrentUrl();
                                                            }
                                                    });
             this.stateHandler.handleConnectionToGroup(promise);
@@ -225,9 +236,8 @@ module controllers {
             this.stateHandler.handleUserAddedToGroup();
         }
 
-        private generateUrlForRoom(roomId: string): string {
-            return "https://" + window.location.host + "/" + roomId + "/" + this.$rootScope.level.level
-                + "/" + this.$scope.wordsCountConfig.wordsCountFilter;
+        private getCurrentUrl(): string {
+            return window.location.protocol + "//" + window.location.host + this.$location.url();
         }
     }
 

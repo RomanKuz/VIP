@@ -93,13 +93,6 @@ namespace WordsComp
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            var rewriteOptions = new RewriteOptions()
-                .AddRewrite(@"^.*/[1-3]/[0-9]+", //roomIdGuid/LevelNum/wordsCountFilter
-                            "index.html",
-                            true)
-                .AddRewrite("^vocabulary(?!Page)", "index.html", true); // redirect vocabulary page to main page and let angular handle routing
-            app.UseRewriter(rewriteOptions);
-
             InitializeContainer(app);
 
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));

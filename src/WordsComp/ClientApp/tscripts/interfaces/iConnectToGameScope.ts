@@ -2,6 +2,7 @@
 module Interfaces {
     export interface IConnectToGameScope extends rx.angular.IRxScope {
         connectToGroup: () => void;
+        dissconnectFromGroup: () => void;
         createAndConnectToCustomRoom: () => void;
         connectToExistingRoom: (roomId?: string) => void;
         authenticate : (provider: string) => void;

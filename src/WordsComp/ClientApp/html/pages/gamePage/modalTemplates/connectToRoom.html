@@ -15,7 +15,7 @@
         <input class="form-control" type="textarea" placeholder="Ваше имя :)" ng-model="$root.displayName"></input>
     </div>
     <div class="modal-footer">
-        <a class="btn btn-danger" href="/">Отменить</a>
+        <button class="btn btn-danger" ng-click="dissconnectFromGroup()">Отменить</button>
         <button class="btn btn-default btn-submit" ng-click="connectToExistingRoom()">Подключится</button>
     </div>
 </div>
