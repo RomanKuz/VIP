@@ -1,6 +1,7 @@
 <div us-spinner="{radius:10, width:3, length: 10}" spinner-key="connect-to-group">
-    <div class="modal-header">
-        <h4>Подключится к комнате</h4>
+    <div class="modal-header center-children">
+        <user-info-header></user-info-header>
+        <h4 class="inline">Подключится к комнате</h4>
     </div>
     <div class="modal-body">
         <div class="alert alert-danger alert-dismissible" ng-show="connectToGroupErrorMessage && connectToGroupErrorMessage !== ''">
@@ -15,6 +16,7 @@
         <input class="form-control" type="textarea" placeholder="Ваше имя :)" ng-model="$root.displayName"></input>
     </div>
     <div class="modal-footer">
+        <log-in></log-in>
         <button class="btn btn-danger" ng-click="dissconnectFromGroup()">Отменить</button>
         <button class="btn btn-default btn-submit" ng-click="connectToExistingRoom()">Подключится</button>
     </div>

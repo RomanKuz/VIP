@@ -98,6 +98,10 @@ namespace WordsComp
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+            var rewriteOptions = new RewriteOptions()
+                .AddRewrite("^vocabulary(?!Page)", "index.html", true); // redirect vocabulary page to main page and let angular handle routing
+            app.UseRewriter(rewriteOptions);
+
             ConfigureAuth(app);
 
             app.UseWebSockets()

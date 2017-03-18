@@ -1,7 +1,6 @@
 <div us-spinner="{radius:10, width:3, length: 10}" spinner-key="connect-to-group">
     <div class="modal-header" ng-if="$root.isLoggedIn">
-        <a class='btn' href="/vocabulary"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span class="text">Словарь</span></a>
-        <img class="img-responsive img-rounded user-image-floated" ng-if="$root.currentUserInfo.profileImage" ng-src="{{$root.currentUserInfo.profileImage}}"></img>
+        <user-info-header></user-info-header>
     </div>
     <div class="modal-body">
         <ul class="nav nav-tabs" id="tabContent">
@@ -27,12 +26,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <div style="float:left">
-            <span ng-show="$root.isLoggedIn === false" class="text">Войти:</span>
-            <i ng-show="$root.isLoggedIn === false" class="fa fa-facebook-square fa-lg login-icon" aria-hidden="true" ng-click="authenticate('facebook')"></i>
-            <i ng-show="$root.isLoggedIn === false" class="fa fa-google fa-lg login-icon" aria-hidden="true" ng-click="authenticate('google')"></i>
-            <button ng-show="$root.isLoggedIn === true" class="btn btn-xs btn-danger" ng-click="logOut()">Выйти</button>
-        </div>
+        <log-in></log-in>
         <button class="btn btn-default btn-submit" ng-show="startModalState === 1" ng-click="connectToGroup()">Начать игру</button>
         <button class="btn btn-default btn-submit" ng-show="startModalState === 2" ng-click="createAndConnectToCustomRoom()">Создать комнату</button>
     </div>

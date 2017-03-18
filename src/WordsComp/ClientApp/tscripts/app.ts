@@ -28,11 +28,24 @@ module App {
             // use the HTML5 History API
             $locationProvider.html5Mode(true);
         }]);
-    app.directive('userInfo', function(){
+
+    app.directive('userInfo', () => {
       return {
         restrict: 'E',
         templateUrl: 'userInfoTemplate.html'
       }
+    })
+    .directive('logIn', () => {
+        return {
+            restrict: 'E',
+            templateUrl: 'logIn.html'
+      }
+    })
+    .directive('userInfoHeader', () => {
+        return {
+            restrict: 'E',
+            templateUrl: 'userInfoHeader.html'
+        }
     });
     app.run(["$rootScope", ($rootScope: Interfaces.IRootScope) => {
         $rootScope.roomOptions = {

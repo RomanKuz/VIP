@@ -1,11 +1,13 @@
 <div cg-busy='connectToGroupPromise'>
-    <div class="modal-header">
-        <h4>Вот неудача ;(</h4>
+    <div class="modal-header center-children">
+        <user-info-header></user-info-header>
+        <h4 class="inline">Вот неудача ;(</h4>
     </div>
     <div class="modal-body">
         <i>{{leftUserName}}</i> покинул игру. Если хотите, можете сыграть ещё :D
     </div>
     <div class="modal-footer">
+        <log-in></log-in>
         <button class="btn btn-default btn-submit" ng-click="connectToGroup()">Сыграть ещё</button>
     </div>
 </div>

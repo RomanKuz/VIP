@@ -1,4 +1,7 @@
 <div us-spinner="{radius:10, width:3, length: 10}" spinner-key="connect-to-group">
+    <div class="modal-header">
+        <user-info-header></user-info-header>
+    </div>
     <div class="modal-body">
         {{message}}
         </br>
@@ -30,7 +33,8 @@
         </div>
     </div>
     <div class="modal-footer">
-        <a class="btn btn-danger" ng-show="shouldShowCancelButton" href="/">Отменить</a>
+        <log-in></log-in>
+        <button class="btn btn-danger" ng-show="shouldShowCancelButton" ng-click="dissconnectFromGroup()">Отменить</button>
         <button class="btn btn-default btn-submit" ng-click="playAgain()">{{playAgainDisplayMsg}}</button>
     </div>
 </div>
