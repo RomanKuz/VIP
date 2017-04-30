@@ -1,0 +1,6 @@
+<div class='float-left'>
+    <span ng-show="$root.isLoggedIn === false" class="text">Войти:</span>
+    <i ng-show="$root.isLoggedIn === false" class="fa fa-facebook-square fa-lg login-icon" aria-hidden="true" ng-click="authenticate('facebook')"></i>
+    <i ng-show="$root.isLoggedIn === false" class="fa fa-google fa-lg login-icon" aria-hidden="true" ng-click="authenticate('google')"></i>
+    <button ng-show="$root.isLoggedIn === true" class="btn btn-xs btn-danger" ng-click="logOut()">Выйти</button>
+</div>
